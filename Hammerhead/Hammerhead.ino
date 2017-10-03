@@ -62,13 +62,34 @@ void loop()
     mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
     mySerial.print("Onward!");
   #endif
-  
+
   DriveForward();
 
-  while (digitalRead(LeftSwitchPin) && digitalRead(RightSwitchPin))
+  while (true)
   {
-    // Wait for switch to be pressed
-    lastHit = BOTH;
+    if (digitalRead(LeftSwitchPin))
+    {
+      lastHit = LEFT;
+    }
+  
+    if (digitalRead(RightSwitchPin))
+    {
+      lastHit = RIGHT;
+    }
+
+    DriveBackward();
+    delay(1000);
+    break;
+  }
+
+  if (lastHit == RIGHT)
+  {
+    TurnLeft();
+  }
+  
+  if (lastHit == LEFT)
+  {
+    TurnRight();
   }
 
   #ifdef DEBUG
@@ -78,9 +99,6 @@ void loop()
       mySerial.print("Both switches pressed!");
     }
   #endif
-  
-  DriveBackward();
-  delay(2000);
 }
 
 void DriveForward()
@@ -93,5 +111,19 @@ void DriveBackward()
 {
   Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
+}
+
+void TurnLeft()
+{
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(BACKWARD);
+  Delay(1000); 
+}
+
+void TurnRight()
+{
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(FORWARD);
+  Delay(1000); 
 }
 
