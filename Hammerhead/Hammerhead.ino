@@ -89,14 +89,28 @@ void loop()
     if (!digitalRead(StartStopButton))
     {
       StopMotors();
+      
+      #ifdef DEBUG
+        mySerial.print("?f"); // Send clear screen command to LCD
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("STOP!");
+      #endif
+      
       while(true)
       {
-        delay(500);
+        delay(250);
         
         if(!digitalRead(StartStopButton))
         {
           DriveForward();
-          delay(500);
+          
+          #ifdef DEBUG
+            mySerial.print("?f"); // Send clear screen command to LCD
+            mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+            mySerial.print("Onward!");
+          #endif
+          
+          delay(250);
           break;
         }
       }
@@ -104,6 +118,25 @@ void loop()
     
     delay(10);
   }
+
+  #ifdef DEBUG
+    mySerial.print("?f"); // Send clear screen command to LCD
+    switch(lastHit)
+    {
+      case LEFT:
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("LEFT switch");
+        mySerial.print("?x00?y1");  // Move cursor to position x=0 and y=1 on the LCD display
+        mySerial.print("pressed!");
+        break;
+      case RIGHT:
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("RIGHT switch");
+        mySerial.print("?x00?y1");  // Move cursor to position x=0 and y=1 on the LCD display
+        mySerial.print("pressed!");
+        break;
+    }
+  #endif
 
   if (lastHit == RIGHT)
   {
@@ -122,15 +155,9 @@ void loop()
   }
 
   #ifdef DEBUG
-    switch(lastHit)
-    {
-      case LEFT:
-        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
-        mySerial.print("LEFT switch pressed!");
-      case RIGHT:
-        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
-        mySerial.print("RIGHT switch pressed!");
-    }
+    mySerial.print("?f"); // Send clear screen command to LCD
+    mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+    mySerial.print("Onward!");
   #endif
 }
 
