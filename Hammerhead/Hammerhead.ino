@@ -65,8 +65,8 @@ void loop()
   
   DriveForward();
 
-  while(digitalRead(LeftSwitchPin) && digitalRead(RightSwitchPin)
-  {   
+  while (digitalRead(LeftSwitchPin) && digitalRead(RightSwitchPin))
+  {
     // Wait for switch to be pressed
     lastHit = BOTH;
   }
@@ -81,7 +81,6 @@ void loop()
   
   DriveBackward();
   delay(2000);
-    
 }
 
 void DriveForward()
@@ -95,6 +94,4 @@ void DriveBackward()
   Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
 }
-
-  
 
