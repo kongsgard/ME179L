@@ -23,71 +23,75 @@ enum pressedSwitch{
 
 static pressedSwitch lastHit = NONE;
 
-SoftwareSerial mySerial = SoftwareSerial(DummyRxPin, LCDTxPin);  //Change Tx and Rx Pins to pins of our choosing
+SoftwareSerial mySerial = SoftwareSerial(DummyRxPin, LCDTxPin);  // Change Tx and Rx Pins to pins of our choosing
 
-AF_DCMotor Right_Motor(3, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
-AF_DCMotor Left_Motor(4, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
+AF_DCMotor Right_Motor(3, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
+AF_DCMotor Left_Motor(4, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 
-void setup(){
+void setup()
+{
   pinMode(LCDTxPin, OUTPUT);
-  mySerial.begin(9600); //Set baud rate for the LCD serial communication
-  mySerial.print("?f"); //Sends clear screen command to LCD
+  mySerial.begin(9600); // Set baud rate for the LCD serial communication
+  mySerial.print("?f"); // Send clear screen command to LCD
   
-  pinMode(LeftSwitchPin, INPUT);      // Makes left switch pin an input
-  digitalWrite(LeftSwitchPin, HIGH);  // Enables the pull-up resistor on left switch pin
-  pinMode(RightSwitchPin, INPUT);     // Makes right switch pin an input
-  digitalWrite(RightSwitchPin, HIGH); // Enables the pull-up resistor on right switch pin
+  pinMode(LeftSwitchPin, INPUT);      // Make left switch pin an input
+  digitalWrite(LeftSwitchPin, HIGH);  // Enable the pull-up resistor on left switch pin
+  pinMode(RightSwitchPin, INPUT);     // Make right switch pin an input
+  digitalWrite(RightSwitchPin, HIGH); // Enable the pull-up resistor on right switch pin
   
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
   
-  mySerial.print("?x00?y0");  //Move cursor to position x=0 and y=0 on the LCD display
+  mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
   mySerial.print("Bump to begin...");
   
-  while(digitalRead(LeftSwitchPin)){
-   //Wait for switch to be pressed 
+  while(digitalRead(LeftSwitchPin))
+  {
+   // Wait for switch to be pressed 
   }
   
-  mySerial.print("?x00?y1");  //Move cursor to position x=0 and y=1 on the LCD display
+  mySerial.print("?x00?y1");  // Move cursor to position x=0 and y=1 on the LCD display
   mySerial.print("Starting!");
   delay(1000);
-  mySerial.print("?f"); //Sends clear screen command to LCD
+  mySerial.print("?f"); // Send clear screen command to LCD
 }
 
-void loop(){ 
+void loop()
+{ 
   #ifdef DEBUG
-    mySerial.print("?x00?y0");  //Move cursor to position x=0 and y=0 on the LCD display
+    mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
     mySerial.print("Onward!");
   #endif
   
   DriveForward();
 
-  while(digitalRead(LeftSwitchPin) && digitalRead(RightSwitchPin)){   
-    //Wait for switch to be pressed
+  while(digitalRead(LeftSwitchPin) && digitalRead(RightSwitchPin)
+  {   
+    // Wait for switch to be pressed
     lastHit = BOTH;
   }
 
-  if (lastHit == BOTH) {
-    mySerial.print("?x00?y0");  //Move cursor to position x=0 and y=0 on the LCD display
-    mySerial.print("Both switches pressed!");
-  }
-
-  //#ifdef DEBUG
-  //  mySerial.print("?x00?y0");  //Move cursor to position x=0 and y=0 on the LCD display
-  //  mySerial.print("OUCH!!!");
-  //#endif
+  #ifdef DEBUG
+    if (lastHit == BOTH)
+    {
+      mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+      mySerial.print("Both switches pressed!");
+    }
+  #endif
   
   DriveBackward();
   delay(2000);
     
 }
 
-void DriveForward(){
+void DriveForward()
+{
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
 }
 
-void DriveBackward(){
+void DriveBackward()
+{
   Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
 }
