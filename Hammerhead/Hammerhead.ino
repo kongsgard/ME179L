@@ -24,7 +24,9 @@ enum pressedSwitch{
   BOTH
 };
 
-static pressedSwitch lastHit = NONE;
+static pressedSwitch hit = NONE;
+static pressedSwitch previousHit = NONE;
+static unsigned int backAndForthCounter = 0;
 
 SoftwareSerial mySerial = SoftwareSerial(DummyRxPin, LCDTxPin);  // Change Tx and Rx Pins to pins of our choosing
 
@@ -73,17 +75,19 @@ void loop()
 
   DriveForward();
 
+  previousHit = hit;
+
   while (true)
   {
     if (!digitalRead(LeftSwitchPin))
     {
-      lastHit = LEFT;
+      hit = LEFT;
       break;
     }
   
     if (!digitalRead(RightSwitchPin))
     {
-      lastHit = RIGHT;
+      hit = RIGHT;
       break;
     }
 
@@ -122,7 +126,7 @@ void loop()
 
   #ifdef DEBUG
     mySerial.print("?f"); // Send clear screen command to LCD
-    switch(lastHit)
+    switch(hit)
     {
       case LEFT:
         mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
@@ -139,7 +143,7 @@ void loop()
     }
   #endif
 
-  if (lastHit == RIGHT)
+  if (hit == RIGHT)
   {
     DriveBackward();
     delay(BackwardDelay);
@@ -147,12 +151,34 @@ void loop()
     delay(TurningDelay);
   }
   
-  if (lastHit == LEFT)
+  if (hit == LEFT)
   {
     DriveBackward();
     delay(BackwardDelay);
     TurnRight();
     delay(TurningDelay); 
+  }
+
+  if (hit != previousHit)
+  {
+    backAndForthCounter++;
+    if (backAndForthCounter > 2)
+    {
+      #ifdef DEBUG
+        mySerial.print("?f"); // Send clear screen command to LCD
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("Stuck!");
+      #endif
+      
+      TurnRight();
+      delay(2*TurningDelay); 
+
+      backAndForthCounter = 0;
+    }
+  }
+  else
+  {
+    backAndForthCounter = 0;
   }
 
   #ifdef DEBUG
