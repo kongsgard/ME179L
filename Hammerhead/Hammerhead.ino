@@ -31,7 +31,8 @@ SoftwareSerial mySerial = SoftwareSerial(DummyRxPin, LCDTxPin);  // Change Tx an
 AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
-#define TurningDelay 2000 // The motors should back up and turn for this amount of time
+#define BackwardDelay 1500 // The robot should back up for this amount of time
+#define TurningDelay 1000 // The robot should turn for this amount of time
 
 void setup()
 {
@@ -141,7 +142,7 @@ void loop()
   if (lastHit == RIGHT)
   {
     DriveBackward();
-    delay(TurningDelay);
+    delay(BackwardDelay);
     TurnLeft();
     delay(TurningDelay);
   }
@@ -149,7 +150,7 @@ void loop()
   if (lastHit == LEFT)
   {
     DriveBackward();
-    delay(TurningDelay);
+    delay(BackwardDelay);
     TurnRight();
     delay(TurningDelay); 
   }
