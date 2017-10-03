@@ -67,29 +67,35 @@ void loop()
 
   while (true)
   {
-    if (digitalRead(LeftSwitchPin))
+    if (!digitalRead(LeftSwitchPin))
     {
       lastHit = LEFT;
+      break;
     }
   
-    if (digitalRead(RightSwitchPin))
+    if (!digitalRead(RightSwitchPin))
     {
       lastHit = RIGHT;
+      break;
     }
-
-    DriveBackward();
-    delay(1000);
-    break;
+    
+    delay(100);
   }
 
   if (lastHit == RIGHT)
   {
+    DriveBackward();
+    delay(2000);
     TurnLeft();
+    delay(2000);
   }
   
   if (lastHit == LEFT)
   {
+    DriveBackward();
+    delay(2000);
     TurnRight();
+    delay(2000); 
   }
 
   #ifdef DEBUG
@@ -117,13 +123,11 @@ void TurnLeft()
 {
   Right_Motor.run(FORWARD);
   Left_Motor.run(BACKWARD);
-  Delay(1000); 
 }
 
 void TurnRight()
 {
   Right_Motor.run(BACKWARD);
   Left_Motor.run(FORWARD);
-  Delay(1000); 
 }
 
