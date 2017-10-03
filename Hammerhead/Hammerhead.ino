@@ -101,10 +101,14 @@ void loop()
   }
 
   #ifdef DEBUG
-    if (lastHit == BOTH)
+    switch(lastHit)
     {
-      mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
-      mySerial.print("Both switches pressed!");
+      case LEFT:
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("LEFT switch pressed!");
+      case RIGHT:
+        mySerial.print("?x00?y0");  // Move cursor to position x=0 and y=0 on the LCD display
+        mySerial.print("RIGHT switch pressed!");
     }
   #endif
 }
