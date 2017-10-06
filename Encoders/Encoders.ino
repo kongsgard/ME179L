@@ -28,6 +28,8 @@ volatile int leftEncoderCount;   // Use "volatile" for faster updating of value 
 volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
+static unsigned int speedSettings[] = {50, 100, 150};
+
 // Define serial display and motor objects:
 SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
 AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
@@ -57,8 +59,8 @@ void setup()
   mySerial.begin(9600);
 
   // Set motor speed:
-  Right_Motor.setSpeed(180);
-  Left_Motor.setSpeed(180);
+  Right_Motor.setSpeed(speedSettings[1]);
+  Left_Motor.setSpeed(speedSettings[1]);
 
   mySerial.print("?f");                // Clears LCD screen
   mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
@@ -67,6 +69,9 @@ void setup()
 
 void loop()
 {
+  // Insert code for speed and distance settings here
+  // Possibly use the bumper switches to change setting
+
   while (digitalRead(switchPin)) {
     // Wait until switch is pressed.
   }
