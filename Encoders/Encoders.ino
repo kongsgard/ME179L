@@ -24,8 +24,9 @@ near the break-beam sensor so that as it turns it alternately blocks and allows 
 #define RightMotorPin   4   // Right motor is connected to this pin
 
 // Define (and initialize) global variables:
-volatile int encoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
-int encoderCountGoal = 100;
+volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
+volatile int rightEncoderCount;
+int encoderCountGoal = 10;
 
 // Define serial display and motor objects:
 SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
@@ -36,10 +37,10 @@ void setup()
 {
   // Setup hardware interrupt:
   int leftInterruptPin = leftEncoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
-  attachInterrupt(leftInterruptPin, IncrementAndDisplay, FALLING);   // Attach interrupt pin, name of function to be called
+  attachInterrupt(leftInterruptPin, incrementLeftEncoder, FALLING);   // Attach interrupt pin, name of function to be called
   // During interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
   int rightInterruptPin = rightEncoderPin - 2;
-  attachInterrupt(rightInterruptPin, IncrementAndDisplay, FALLING);
+  attachInterrupt(rightInterruptPin, incrementRightEncoder, FALLING);
 
   // Setup encoder i.e. break-beam:
   pinMode(leftEncoderPin, INPUT);
@@ -76,23 +77,33 @@ void loop()
 
   DriveForward();
 
-  encoderCount = 0;
-  while (encoderCount < encoderCountGoal) { }   // Wait until encoder count goal is reached
-        // (allowing interrupt to update value of encoderCount during this time):
+  leftEncoderCount = 0;
+  rightEncoderCount = 0;
+  while (leftEncoderCount < encoderCountGoal) { }   // Wait until encoder count goal is reached
+        // (allowing interrupt to update value of leftEncoderCount during this time):
 
   StopMotors();
 }
 
-void IncrementAndDisplay()
+void incrementLeftEncoder()
 {
-  ++encoderCount;
+  ++leftEncoderCount;
+  displayEncoderCounts();
+}
+
+void incrementRightEncoder()
+{
+  ++rightEncoderCount;
   displayEncoderCounts();
 }
 
 void displayEncoderCounts()
 {
   mySerial.print("?x00?y1");
-  mySerial.print(encoderCount);
+  mySerial.print("L: ");
+  mySerial.print(leftEncoderCount);
+  mySerial.print(" R: ");
+  mySerial.print(rightEncoderCount);
 }
 
 void StopMotors()
