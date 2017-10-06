@@ -18,6 +18,7 @@ near the break-beam sensor so that as it turns it alternately blocks and allows 
 #define switchPin       11
 #define leftSwitchPin   14  // Left switch is connected to this pin
 #define rightSwitchPin  15  // Right switch is connected to this pin
+#define potPin          2
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
@@ -34,6 +35,8 @@ unsigned int speedSettings[] = {120, 150, 200};
 String speedSettingsVerbal[] = {"LOW", "MEDIUM", "HIGH"};
 unsigned int speed = 0;     // Current speed setting
 unsigned int leftSwitchPinTriggered = 0;
+unsigned int distance = 0;
+unsigned int lastDistance = 0;
 
 // Define serial display and motor objects:
 SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
@@ -71,6 +74,10 @@ void setup()
   Right_Motor.setSpeed(speedSettings[1]);
   Left_Motor.setSpeed(speedSettings[1]);
 
+  // Set initial distance
+  distance = analogRead(potPin);
+  lastDistance = distance;
+
   mySerial.print("?f");                // Clears LCD screen
   mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
   mySerial.print("Press to Begin..."); // Displays "Press to Begin..."
@@ -80,21 +87,28 @@ void loop()
 {
   while (digitalRead(switchPin))
   {
-  // Wait until switch is pressed.
+    // Wait until switch is pressed.
 
-  // Insert code for speed and distance settings here
-  // Possibly use the bumper switches to change setting
-  leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
-  if (leftSwitchPinTriggered)
-  {
-    speed = ++speed % 3;
-    Right_Motor.setSpeed(speedSettings[speed]);
-    Left_Motor.setSpeed(speedSettings[speed]);
-    displaySpeedSetting();
-  }
-  leftSwitchPinTriggered = 0;
+    // Insert code for speed and distance settings here
+    // Possibly use the bumper switches to change setting
+    leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
+    if (leftSwitchPinTriggered)
+    {
+      speed = ++speed % 3;
+      Right_Motor.setSpeed(speedSettings[speed]);
+      Left_Motor.setSpeed(speedSettings[speed]);
+      displaySpeedSetting();
+    }
+    leftSwitchPinTriggered = 0;
 
-  delay(150);
+    distance = analogRead(potPin);
+    if (distance > lastDistance + 5 || distance < lastDistance - 5)
+    {
+      displayDistance();
+      lastDistance = distance;
+    }
+
+    delay(150);
   }
 
   mySerial.print("?f");
@@ -134,11 +148,20 @@ void displayEncoderCounts()
 
 void displaySpeedSetting()
 {
-  mySerial.print("?f");                // Clears LCD screen
-  mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
+  mySerial.print("?f");
+  mySerial.print("?x00?y0");
   mySerial.print("Speed:");
   mySerial.print("?x00?y1");
   mySerial.print(speedSettingsVerbal[speed]);
+}
+
+void displayDistance()
+{
+  mySerial.print("?f");
+  mySerial.print("?x00?y0");
+  mySerial.print("Distance:");
+  mySerial.print("?x00?y1");
+  mySerial.print(distance);
 }
 
 void StopMotors()
