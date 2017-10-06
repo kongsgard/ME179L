@@ -15,22 +15,22 @@ near the break-beam sensor so that as it turns it alternately blocks and allows 
 #include <SoftwareSerial.h>
 
 // Define constants:
-#define switchPin       5
+#define switchPin       11
 #define leftSwitchPin   14  // Left switch is connected to this pin
 #define rightSwitchPin  15  // Right switch is connected to this pin
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
 #define rightEncoderPin 3
-#define LeftMotorPin    3   // Left motor is connected to this pin
-#define RightMotorPin   4   // Right motor is connected to this pin
+#define LeftMotorPin    5   // Left motor is connected to this pin
+#define RightMotorPin   6   // Right motor is connected to this pin
 
 // Define (and initialize) global variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
-unsigned int speedSettings[] = {50, 100, 150};
+unsigned int speedSettings[] = {120, 150, 200};
 unsigned int speed = 0;     // Current speed setting
 unsigned int leftSwitchPinTriggered = 0;
 
