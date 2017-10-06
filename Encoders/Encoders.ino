@@ -75,7 +75,7 @@ void setup()
   Left_Motor.setSpeed(speedSettings[1]);
 
   // Set initial distance
-  distance = analogRead(potPin);
+  distance = analogRead(potPin) / 10;
   lastDistance = distance;
 
   mySerial.print("?f");                // Clears LCD screen
@@ -92,6 +92,8 @@ void loop()
     changeDistanceSetting();
     delay(150);
   }
+
+  encoderCountGoal = distance; // Should possibly be scaled
 
   mySerial.print("?f");
   mySerial.print("?x00?y0");
@@ -161,8 +163,8 @@ void changeSpeedSetting()
 
 void changeDistanceSetting()
 {
-  distance = analogRead(potPin);
-  if (distance > lastDistance + 5 || distance < lastDistance - 5)
+  distance = analogRead(potPin) / 10;
+  if (distance != lastDistance)
   {
     displayDistance();
     lastDistance = distance;
