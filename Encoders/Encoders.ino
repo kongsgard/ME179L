@@ -15,10 +15,11 @@ near the break-beam sensor so that as it turns it alternately blocks and allows 
 #include <SoftwareSerial.h>
 
 // Define constants:
-#define switchPin     5   
-#define txPin         13  // LCD tx pin.
-#define rxPin         13  // LCD rx pin (not really used).
-#define encoderPin    2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt).
+#define switchPin       5
+#define txPin           13  // LCD tx pin.
+#define rxPin           13  // LCD rx pin (not really used).
+#define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
+#define rightEncoderPin 3
 #define LeftMotorPin    3   // Left motor is connected to this pin
 #define RightMotorPin   4   // Right motor is connected to this pin
 
@@ -27,64 +28,71 @@ volatile int encoderCount;   // Use "volatile" for faster updating of value duri
 int encoderCountGoal = 100;
 
 // Define serial display and motor objects:
-SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);  
+SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
 AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
-void setup() {
-  
+void setup()
+{
   // Setup hardware interrupt:
-  int interruptPin = encoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
-  attachInterrupt( interruptPin, IncrementAndDisplay, FALLING);   // Attach interrupt pin, name of function to be called 
-        // during interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
-  
+  int leftInterruptPin = leftEncoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
+  attachInterrupt(leftInterruptPin, IncrementAndDisplay, FALLING);   // Attach interrupt pin, name of function to be called
+  // During interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
+  int rightInterruptPin = rightEncoderPin - 2;
+  attachInterrupt(rightInterruptPin, IncrementAndDisplay, FALLING);
+
   // Setup encoder i.e. break-beam:
-  pinMode( encoderPin, INPUT); 
-  digitalWrite( encoderPin, HIGH);  
-  
+  pinMode(leftEncoderPin, INPUT);
+  digitalWrite(leftEncoderPin, HIGH);
+  pinMode(rightEncoderPin, INPUT);
+  digitalWrite(rightEncoderPin, HIGH);
+
   // Setup switch:
-  pinMode( switchPin, INPUT); 
-  digitalWrite( switchPin, HIGH);  
-  
+  pinMode(switchPin, INPUT);
+  digitalWrite(switchPin, HIGH);
+
   // Setup serial display:
-  pinMode( txPin, OUTPUT);
-  mySerial.begin(9600); 
-        
+  pinMode(txPin, OUTPUT);
+  mySerial.begin(9600);
+
   // Set motor speed:
   Right_Motor.setSpeed(180);
   Left_Motor.setSpeed(180);
-  
-  mySerial.print("?f");          //Clears LCD screen
-  mySerial.print("?x00?y0");     //Sets Cursor to x00,y0
-  mySerial.print("Press to Begin...");    //Displays "Press to Begin..."
+
+  mySerial.print("?f");                // Clears LCD screen
+  mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
+  mySerial.print("Press to Begin..."); // Displays "Press to Begin..."
 }
 
-
-void loop() {
-
-  while (digitalRead(switchPin)) { 
+void loop()
+{
+  while (digitalRead(switchPin)) {
     // Wait until switch is pressed.
-    digitalWrite( switchPin, LOW);  
   }
-  
+
   mySerial.print("?f");
   mySerial.print("?x00?y0");
   mySerial.print("Counts:");
-  
+
   DriveForward();
-  
-  encoderCount = 0;  
-  while (encoderCount < encoderCountGoal) { }   // Wait until encoder count goal is reached 
+
+  encoderCount = 0;
+  while (encoderCount < encoderCountGoal) { }   // Wait until encoder count goal is reached
         // (allowing interrupt to update value of encoderCount during this time):
-  
+
   StopMotors();
 }
 
-
-void IncrementAndDisplay() {
+void IncrementAndDisplay()
+{
   ++encoderCount;
+  displayEncoderCounts();
+}
+
+void displayEncoderCounts()
+{
   mySerial.print("?x00?y1");
-  mySerial.print(encoderCount);  
+  mySerial.print(encoderCount);
 }
 
 void StopMotors()
@@ -98,4 +106,3 @@ void DriveForward()
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
 }
-
