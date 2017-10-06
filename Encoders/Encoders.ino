@@ -88,26 +88,8 @@ void loop()
   while (digitalRead(switchPin))
   {
     // Wait until switch is pressed.
-
-    // Insert code for speed and distance settings here
-    // Possibly use the bumper switches to change setting
-    leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
-    if (leftSwitchPinTriggered)
-    {
-      speed = ++speed % 3;
-      Right_Motor.setSpeed(speedSettings[speed]);
-      Left_Motor.setSpeed(speedSettings[speed]);
-      displaySpeedSetting();
-    }
-    leftSwitchPinTriggered = 0;
-
-    distance = analogRead(potPin);
-    if (distance > lastDistance + 5 || distance < lastDistance - 5)
-    {
-      displayDistance();
-      lastDistance = distance;
-    }
-
+    changeSpeedSetting();
+    changeDistanceSetting();
     delay(150);
   }
 
@@ -162,6 +144,29 @@ void displayDistance()
   mySerial.print("Distance:");
   mySerial.print("?x00?y1");
   mySerial.print(distance);
+}
+
+void changeSpeedSetting()
+{
+  leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
+  if (leftSwitchPinTriggered)
+  {
+    speed = ++speed % 3;
+    Right_Motor.setSpeed(speedSettings[speed]);
+    Left_Motor.setSpeed(speedSettings[speed]);
+    displaySpeedSetting();
+  }
+  leftSwitchPinTriggered = 0;
+}
+
+void changeDistanceSetting()
+{
+  distance = analogRead(potPin);
+  if (distance > lastDistance + 5 || distance < lastDistance - 5)
+  {
+    displayDistance();
+    lastDistance = distance;
+  }
 }
 
 void StopMotors()
