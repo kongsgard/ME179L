@@ -69,11 +69,12 @@ void setup()
 
 void loop()
 {
+  while (digitalRead(switchPin))
+  {
+  // Wait until switch is pressed.
+
   // Insert code for speed and distance settings here
   // Possibly use the bumper switches to change setting
-
-  while (digitalRead(switchPin)) {
-    // Wait until switch is pressed.
   }
 
   mySerial.print("?f");
