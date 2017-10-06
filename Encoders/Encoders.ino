@@ -7,8 +7,6 @@ Demonstrates how to count turns of an encoder (Lego pulley) wheel. In addition t
 --An LCD screen (optional).
 The wheel should be attached to a rotating axle, directly or indirectly attached to the motor, and placed
 near the break-beam sensor so that as it turns it alternately blocks and allows the beam through.
-*** History ***
---10/4/12:  Modified by Blane for readability and simpler logic.
 */
 
 #include <AFMotor.h>
@@ -31,17 +29,18 @@ volatile int leftEncoderCount;   // Use "volatile" for faster updating of value 
 volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
-unsigned int speedSettings[] = {120, 150, 200};
-String speedSettingsVerbal[] = {"LOW", "MEDIUM", "HIGH"};
-unsigned int speed = 0;     // Current speed setting
-unsigned int leftSwitchPinTriggered = 0;
-unsigned int distance = 0;
-unsigned int lastDistance = 0;
+const unsigned int numSpeedSettings       = 3;
+const unsigned int speedSettings[]        = {120, 150, 200};
+const String       speedSettingsVerbal[]  = {"LOW", "MEDIUM", "FAST"};
+unsigned int       speed                  = 0; // Current speed setting
+bool               leftSwitchPinTriggered = 0;
+unsigned int       distance               = 0;
+unsigned int       lastDistance           = 0;
 
 // Define serial display and motor objects:
 SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
-AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
-AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
+AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 3, 1KHz pwm
+AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 4, 1KHz pwm
 
 void setup()
 {
@@ -153,12 +152,12 @@ void changeSpeedSetting()
   leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
   if (leftSwitchPinTriggered)
   {
-    speed = ++speed % 3;
+    speed = ++speed % numSpeedSettings;
     Right_Motor.setSpeed(speedSettings[speed]);
     Left_Motor.setSpeed(speedSettings[speed]);
     displaySpeedSetting();
   }
-  leftSwitchPinTriggered = 0;
+  leftSwitchPinTriggered = false;
 }
 
 void changeDistanceSetting()
