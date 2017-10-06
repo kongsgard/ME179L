@@ -31,6 +31,7 @@ volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
 unsigned int speedSettings[] = {120, 150, 200};
+String speedSettingsVerbal[] = {"LOW", "MEDIUM", "HIGH"};
 unsigned int speed = 0;     // Current speed setting
 unsigned int leftSwitchPinTriggered = 0;
 
@@ -89,13 +90,11 @@ void loop()
     speed = ++speed % 3;
     Right_Motor.setSpeed(speedSettings[speed]);
     Left_Motor.setSpeed(speedSettings[speed]);
-    mySerial.print("?f");                // Clears LCD screen
-    mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
-    mySerial.print(speed);
+    displaySpeedSetting();
   }
   leftSwitchPinTriggered = 0;
 
-  delay(100);
+  delay(150);
   }
 
   mySerial.print("?f");
@@ -131,6 +130,15 @@ void displayEncoderCounts()
   mySerial.print(leftEncoderCount);
   mySerial.print(" R: ");
   mySerial.print(rightEncoderCount);
+}
+
+void displaySpeedSetting()
+{
+  mySerial.print("?f");                // Clears LCD screen
+  mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
+  mySerial.print("Speed:");
+  mySerial.print("?x00?y1");
+  mySerial.print(speedSettingsVerbal[speed]);
 }
 
 void StopMotors()
