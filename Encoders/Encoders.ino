@@ -16,6 +16,8 @@ near the break-beam sensor so that as it turns it alternately blocks and allows 
 
 // Define constants:
 #define switchPin       5
+#define leftSwitchPin   14  // Left switch is connected to this pin
+#define rightSwitchPin  15  // Right switch is connected to this pin
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
@@ -28,7 +30,9 @@ volatile int leftEncoderCount;   // Use "volatile" for faster updating of value 
 volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
-static unsigned int speedSettings[] = {50, 100, 150};
+unsigned int speedSettings[] = {50, 100, 150};
+unsigned int speed = 0;     // Current speed setting
+unsigned int leftSwitchPinTriggered = 0;
 
 // Define serial display and motor objects:
 SoftwareSerial mySerial =  SoftwareSerial( rxPin, txPin);
@@ -53,6 +57,10 @@ void setup()
   // Setup switch:
   pinMode(switchPin, INPUT);
   digitalWrite(switchPin, HIGH);
+  pinMode(leftSwitchPin, INPUT);
+  digitalWrite(leftSwitchPin, HIGH);
+  pinMode(rightSwitchPin, INPUT);
+  digitalWrite(rightSwitchPin, HIGH);
 
   // Setup serial display:
   pinMode(txPin, OUTPUT);
@@ -75,6 +83,19 @@ void loop()
 
   // Insert code for speed and distance settings here
   // Possibly use the bumper switches to change setting
+  leftSwitchPinTriggered = !digitalRead(leftSwitchPin);
+  if (leftSwitchPinTriggered)
+  {
+    speed = ++speed % 3;
+    Right_Motor.setSpeed(speedSettings[speed]);
+    Left_Motor.setSpeed(speedSettings[speed]);
+    mySerial.print("?f");                // Clears LCD screen
+    mySerial.print("?x00?y0");           // Sets Cursor to x00,y0
+    mySerial.print(speed);
+  }
+  leftSwitchPinTriggered = 0;
+
+  delay(100);
   }
 
   mySerial.print("?f");
