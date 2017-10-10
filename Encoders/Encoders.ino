@@ -30,7 +30,7 @@ volatile int rightEncoderCount;
 int encoderCountGoal = 10;
 
 const unsigned int numSpeedSettings       = 3;
-const unsigned int speedSettings[]        = {120, 150, 200};
+const unsigned int speedSettings[]        = {120, 160, 200};
 const String       speedSettingsVerbal[]  = {"LOW", "MEDIUM", "FAST"};
 unsigned int       speed                  = 0; // Current speed setting
 bool               leftSwitchPinTriggered = 0;
