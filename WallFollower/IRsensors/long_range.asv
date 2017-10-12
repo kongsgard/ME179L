@@ -1,5 +1,4 @@
-%% Short Range IR Sensor Data
-%
+%%Short Range IR Sensor Data
 clear all;
 clc;
 % Distance
@@ -15,7 +14,7 @@ xlabel('Distance [cm]'); ylabel('Analog value');
 
 createFit(d,a);
 
-%%  Long Range IR Sensor Data
+%% 
 clear all;
 clc;
 % Distance

@@ -1,3 +1,6 @@
+%% Sensor Calibration and Curve Fit
+% Sondre Kongsgard and James Fanchiang
+% 10/12/2017
 %% Short Range IR Sensor Data
 %
 clear all;
@@ -29,12 +32,12 @@ plot(d, a, 'bo');
 title('Long Range IR Sensor');
 xlabel('Distance [cm]'); ylabel('Analog value');
 
-createFit(d,a);
+createFitRat23(d,a);
 
-%% createFit.m function
-%   createFit.m
+%% createFitRat23.m function
+%   createFitRat23.m
 % 
-%   function [fitresult, gof] = createFit(d, a)
+%   function [fitresult, gof] = createFitRat23(d, a)
 %   %CREATEFIT(D,A)
 %   %  Create a fit.
 %   %
@@ -66,3 +69,23 @@ createFit(d,a);
 %   xlabel('Distance (cm)');
 %   ylabel ('Analog Output');
 %   grid on
+%% createFitexp2.m
+% DESCRIPTIVE TEXT
+%% Calibration Equations
+% General model Rat23:
+%          f(x) = (p1*x^2 + p2*x + p3) /
+%                    (x^3 + q1*x^2 + q2*x + q3)
+%     Coefficients (with 95% confidence bounds):
+%            p1 =        6641  (5112, 8171)
+%            p2 =  -1.943e+04  (-2.784e+04, -1.103e+04)
+%            p3 =       -1236  (-1.51e+04, 1.263e+04)
+%            q1 =      -7.766  (-12.13, -3.398)
+%            q2 =        96.4  (60.56, 132.2)
+%            q3 =      -245.3  (-395.4, -95.09)
+% 
+%     Goodness of fit:
+%       SSE: 1.219e+04
+%       R-square: 0.9764
+%       Adjusted R-square: 0.968
+%       RMSE: 29.51
+

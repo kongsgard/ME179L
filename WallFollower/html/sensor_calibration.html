@@ -1,0 +1,198 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML was auto-generated from MATLAB code.
+To make changes, update the MATLAB code and republish this document.
+      --><title>Sensor Calibration and Curve Fit</title><meta name="generator" content="MATLAB 9.1"><link rel="schema.DC" href="http://purl.org/dc/elements/1.1/"><meta name="DC.date" content="2017-10-12"><meta name="DC.source" content="sensor_calibration.m"><style type="text/css">
+html,body,div,span,applet,object,iframe,h1,h2,h3,h4,h5,h6,p,blockquote,pre,a,abbr,acronym,address,big,cite,code,del,dfn,em,font,img,ins,kbd,q,s,samp,small,strike,strong,sub,sup,tt,var,b,u,i,center,dl,dt,dd,ol,ul,li,fieldset,form,label,legend,table,caption,tbody,tfoot,thead,tr,th,td{margin:0;padding:0;border:0;outline:0;font-size:100%;vertical-align:baseline;background:transparent}body{line-height:1}ol,ul{list-style:none}blockquote,q{quotes:none}blockquote:before,blockquote:after,q:before,q:after{content:'';content:none}:focus{outine:0}ins{text-decoration:none}del{text-decoration:line-through}table{border-collapse:collapse;border-spacing:0}
+
+html { min-height:100%; margin-bottom:1px; }
+html body { height:100%; margin:0px; font-family:Arial, Helvetica, sans-serif; font-size:10px; color:#000; line-height:140%; background:#fff none; overflow-y:scroll; }
+html body td { vertical-align:top; text-align:left; }
+
+h1 { padding:0px; margin:0px 0px 25px; font-family:Arial, Helvetica, sans-serif; font-size:1.5em; color:#d55000; line-height:100%; font-weight:normal; }
+h2 { padding:0px; margin:0px 0px 8px; font-family:Arial, Helvetica, sans-serif; font-size:1.2em; color:#000; font-weight:bold; line-height:140%; border-bottom:1px solid #d6d4d4; display:block; }
+h3 { padding:0px; margin:0px 0px 5px; font-family:Arial, Helvetica, sans-serif; font-size:1.1em; color:#000; font-weight:bold; line-height:140%; }
+
+a { color:#005fce; text-decoration:none; }
+a:hover { color:#005fce; text-decoration:underline; }
+a:visited { color:#004aa0; text-decoration:none; }
+
+p { padding:0px; margin:0px 0px 20px; }
+img { padding:0px; margin:0px 0px 20px; border:none; }
+p img, pre img, tt img, li img, h1 img, h2 img { margin-bottom:0px; } 
+
+ul { padding:0px; margin:0px 0px 20px 23px; list-style:square; }
+ul li { padding:0px; margin:0px 0px 7px 0px; }
+ul li ul { padding:5px 0px 0px; margin:0px 0px 7px 23px; }
+ul li ol li { list-style:decimal; }
+ol { padding:0px; margin:0px 0px 20px 0px; list-style:decimal; }
+ol li { padding:0px; margin:0px 0px 7px 23px; list-style-type:decimal; }
+ol li ol { padding:5px 0px 0px; margin:0px 0px 7px 0px; }
+ol li ol li { list-style-type:lower-alpha; }
+ol li ul { padding-top:7px; }
+ol li ul li { list-style:square; }
+
+.content { font-size:1.2em; line-height:140%; padding: 20px; }
+
+pre, code { font-size:12px; }
+tt { font-size: 1.2em; }
+pre { margin:0px 0px 20px; }
+pre.codeinput { padding:10px; border:1px solid #d3d3d3; background:#f7f7f7; }
+pre.codeoutput { padding:10px 11px; margin:0px 0px 20px; color:#4c4c4c; }
+pre.error { color:red; }
+
+@media print { pre.codeinput, pre.codeoutput { word-wrap:break-word; width:100%; } }
+
+span.keyword { color:#0000FF }
+span.comment { color:#228B22 }
+span.string { color:#A020F0 }
+span.untermstring { color:#B20000 }
+span.syscmd { color:#B28C00 }
+
+.footer { width:auto; padding:10px 0px; margin:25px 0px 0px; border-top:1px dotted #878787; font-size:0.8em; line-height:140%; font-style:italic; color:#878787; text-align:left; float:none; }
+.footer p { margin:0px; }
+.footer a { color:#878787; }
+.footer a:hover { color:#878787; text-decoration:underline; }
+.footer a:visited { color:#878787; }
+
+table th { padding:7px 5px; text-align:left; vertical-align:middle; border: 1px solid #d6d4d4; font-weight:bold; }
+table td { padding:7px 5px; text-align:left; vertical-align:top; border:1px solid #d6d4d4; }
+
+
+
+
+
+  </style></head><body><div class="content"><h1>Sensor Calibration and Curve Fit</h1><!--introduction--><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Short Range IR Sensor Data</a></li><li><a href="#2">Long Range IR Sensor Data</a></li><li><a href="#3">createFit.m function</a></li></ul></div><h2 id="1">Short Range IR Sensor Data</h2><pre class="codeinput">clear <span class="string">all</span>;
+clc;
+<span class="comment">% Distance</span>
+d = [0.1, 0.5, 1, 2, 3, 4, 5, 6, 7, 10, 15, 20, 25, 30];
+
+<span class="comment">% Analog value</span>
+a = [3, 300, 450, 500, 670, 640, 530, 450, 380, 260, 175, 110, 80, 65];
+
+figure(1); clf; hold <span class="string">on</span>;
+plot(d, a, <span class="string">'ko'</span>);
+title(<span class="string">'Short Range IR Sensor'</span>);
+xlabel(<span class="string">'Distance [cm]'</span>); ylabel(<span class="string">'Analog value'</span>);
+
+createFit(d,a);
+</pre><img vspace="5" hspace="5" src="sensor_calibration_01.png" alt=""> <h2 id="2">Long Range IR Sensor Data</h2><pre class="codeinput">clear <span class="string">all</span>;
+clc;
+<span class="comment">% Distance</span>
+d = [0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 40, 50, 60, 70, 80];
+
+<span class="comment">% Analog value</span>
+a = [4, 140, 145, 220, 335, 360, 450, 520, 530, 515, 490, 450, 400, 330, 230, 185, 160, 140, 125, 110];
+
+figure(2); clf; hold <span class="string">on</span>;
+plot(d, a, <span class="string">'bo'</span>);
+title(<span class="string">'Long Range IR Sensor'</span>);
+xlabel(<span class="string">'Distance [cm]'</span>); ylabel(<span class="string">'Analog value'</span>);
+
+createFit(d,a);
+</pre><img vspace="5" hspace="5" src="sensor_calibration_02.png" alt=""> <h2 id="3">createFit.m function</h2><pre class="language-matlab">createFit.m
+</pre><pre class="language-matlab"><span class="keyword">function</span> [fitresult, gof] = createFit(d, a)
+<span class="comment">%CREATEFIT(D,A)</span>
+<span class="comment">%  Create a fit.</span>
+<span class="comment">%</span>
+<span class="comment">%  Data for 'Fitted Curve' fit:</span>
+<span class="comment">%      X Input : d</span>
+<span class="comment">%      Y Output: a</span>
+<span class="comment">%  Output:</span>
+<span class="comment">%      fitresult : a fit object representing the fit.</span>
+<span class="comment">%      gof : structure with goodness-of fit info.</span>
+<span class="comment">%</span>
+<span class="comment">%  See also FIT, CFIT, SFIT.</span>
+</pre><pre class="language-matlab"><span class="comment">%  Auto-generated by MATLAB on 12-Oct-2017 12:06:21</span>
+</pre><pre class="language-matlab"><span class="comment">%% Fit: 'Fitted Curve'.</span>
+[xData, yData] = prepareCurveData( d, a );
+</pre><pre class="language-matlab"><span class="comment">% Set up fittype and options.</span>
+ft = fittype( <span class="string">'smoothingspline'</span> );
+</pre><pre class="language-matlab"><span class="comment">% Fit model to data.</span>
+[fitresult, gof] = fit( xData, yData, ft, <span class="string">'Normalize'</span>, <span class="string">'on'</span> );
+</pre><pre class="language-matlab"><span class="comment">% Plot fit with data.</span>
+h = plot( fitresult, xData, yData );
+legend( h, <span class="string">'Analog Output vs. Distance'</span>, <span class="string">'Fitted Curve'</span>, <span class="string">'Location'</span>, <span class="string">'NorthEast'</span> );
+<span class="comment">% Label axes</span>
+xlabel(<span class="string">'Distance (cm)'</span>);
+ylabel (<span class="string">'Analog Output'</span>);
+grid <span class="string">on</span>
+</pre><p class="footer"><br><a href="http://www.mathworks.com/products/matlab/">Published with MATLAB&reg; R2016b</a><br></p></div><!--
+##### SOURCE BEGIN #####
+%% Sensor Calibration and Curve Fit
+%
+%% Short Range IR Sensor Data
+%
+clear all;
+clc;
+% Distance
+d = [0.1, 0.5, 1, 2, 3, 4, 5, 6, 7, 10, 15, 20, 25, 30];
+
+% Analog value
+a = [3, 300, 450, 500, 670, 640, 530, 450, 380, 260, 175, 110, 80, 65];
+
+figure(1); clf; hold on;
+plot(d, a, 'ko');
+title('Short Range IR Sensor');
+xlabel('Distance [cm]'); ylabel('Analog value');
+
+createFit(d,a);
+
+%%  Long Range IR Sensor Data
+clear all;
+clc;
+% Distance
+d = [0.1, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 15, 20, 30, 40, 50, 60, 70, 80];
+
+% Analog value
+a = [4, 140, 145, 220, 335, 360, 450, 520, 530, 515, 490, 450, 400, 330, 230, 185, 160, 140, 125, 110];
+
+figure(2); clf; hold on;
+plot(d, a, 'bo');
+title('Long Range IR Sensor');
+xlabel('Distance [cm]'); ylabel('Analog value');
+
+createFit(d,a);
+
+%% createFit.m function
+%   createFit.m
+% 
+%   function [fitresult, gof] = createFit(d, a)
+%   %CREATEFIT(D,A)
+%   %  Create a fit.
+%   %
+%   %  Data for 'Fitted Curve' fit:
+%   %      X Input : d
+%   %      Y Output: a
+%   %  Output:
+%   %      fitresult : a fit object representing the fit.
+%   %      gof : structure with goodness-of fit info.
+%   %
+%   %  See also FIT, CFIT, SFIT.
+% 
+%   %  Auto-generated by MATLAB on 12-Oct-2017 12:06:21
+% 
+% 
+%   %% Fit: 'Fitted Curve'.
+%   [xData, yData] = prepareCurveData( d, a );
+% 
+%   % Set up fittype and options.
+%   ft = fittype( 'smoothingspline' );
+% 
+%   % Fit model to data.
+%   [fitresult, gof] = fit( xData, yData, ft, 'Normalize', 'on' );
+% 
+%   % Plot fit with data.
+%   h = plot( fitresult, xData, yData );
+%   legend( h, 'Analog Output vs. Distance', 'Fitted Curve', 'Location', 'NorthEast' );
+%   % Label axes
+%   xlabel('Distance (cm)');
+%   ylabel ('Analog Output');
+%   grid on
+
+##### SOURCE END #####
+--></body></html>
