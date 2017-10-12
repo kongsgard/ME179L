@@ -28,12 +28,10 @@ opts.StartPoint = [406.819274003059 -0.790773877804884 -49.3302971635946 -2.8378
 [fitresult, gof] = fit( xData, yData, ft, opts );
 
 % Plot fit with data.
-figure( 'Name', 'Fitted Curve' );
 h = plot( fitresult, xData, yData );
 legend( h, 'a vs. d', 'Fitted Curve', 'Location', 'NorthEast' );
 % Label axes
-xlabel d
-ylabel a
+xlabel('Distance [cm]'); ylabel('Analog value');
 grid on
 
 
