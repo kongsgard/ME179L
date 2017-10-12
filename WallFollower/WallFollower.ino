@@ -23,12 +23,14 @@ void setup() {
 }
 
 void loop() {
+  /*
   while (digitalRead(switchPin))
   {
     // Wait until switch is pressed.
     // Change settings here
     delay(150);
   }
+  */
 
   // read the analog on the left:
   sensorValueL = analogRead(analogInPinL);
@@ -44,5 +46,5 @@ void loop() {
   // wait 10 milliseconds before the next loop
   // for the analog-to-digital converter to settle
   // after the last reading:
-  delay(10);
+  delay(100);
 }
