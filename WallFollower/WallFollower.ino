@@ -4,15 +4,14 @@
 
 // Pin constants:
 #define switchPin       11
-#define leftSwitchPin   14  // Left switch is connected to this pin
-#define rightSwitchPin  15  // Right switch is connected to this pin
-#define potPin          2
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
-#define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
-#define rightEncoderPin 3
-#define LeftMotorPin    5   // Left motor is connected to this pin
-#define RightMotorPin   6   // Right motor is connected to this pin
+#define LeftMotorPin    3   // Left motor is connected to this pin
+#define RightMotorPin   4   // Right motor is connected to this pin
+#define SPEED           250 // Set speed to be used for motors
+
+AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
+AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
 // Define (and initialize) global variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
@@ -25,46 +24,23 @@ const int analogInPinR = A1; // Analog input from right reflector
 int sensorValueL = 0;        // value read on left
 int sensorValueR = 0;        // value read on right
 
-AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 3, 1KHz pwm
-AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 4, 1KHz pwm
-
-SoftwareSerial mySerial =  SoftwareSerial(rxPin, txPin);
+SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
 void setup() {
-  // Setup hardware interrupt:
-  int leftInterruptPin = leftEncoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
-  attachInterrupt(leftInterruptPin, incrementLeftEncoder, FALLING);   // Attach interrupt pin, name of function to be called
-  // During interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
-  int rightInterruptPin = rightEncoderPin - 2;
-  attachInterrupt(rightInterruptPin, incrementRightEncoder, FALLING);
-
-  // Setup encoder i.e. break-beam:
-  pinMode(leftEncoderPin, INPUT);
-  digitalWrite(leftEncoderPin, HIGH);
-  pinMode(rightEncoderPin, INPUT);
-  digitalWrite(rightEncoderPin, HIGH);
-
-  // Setup switch:
-  pinMode(switchPin, INPUT);
-  digitalWrite(switchPin, HIGH);
-
   // Setup serial display:
   pinMode(txPin, OUTPUT);
   mySerial.begin(9600);
 
   // Set motor speed:
-  Right_Motor.setSpeed(speedSettings[1]);
-  Left_Motor.setSpeed(speedSettings[1]);
+  Right_Motor.setSpeed(SPEED);
+  Left_Motor.setSpeed(SPEED);
 
-  while (digitalRead(switchPin))
-  {
-    // Wait until switch is pressed.
-    // Change settings here
-    delay(150);
-  }
+  // initialize serial communications at 9600 bps:
+  Serial.begin(9600);
 }
 
 void loop() {
+    DriveForward();
   // read the analog on the left:
   sensorValueL = analogRead(analogInPinL);
   // read the analog value on the right:
@@ -79,7 +55,7 @@ void loop() {
   // wait 10 milliseconds before the next loop
   // for the analog-to-digital converter to settle
   // after the last reading:
-  delay(100);
+  delay(10);
 }
 
 // --- //
@@ -94,4 +70,19 @@ void incrementRightEncoder()
 {
   ++rightEncoderCount;
   displayEncoderCounts();
+}
+
+void displayEncoderCounts()
+{
+  mySerial.print("?x00?y1");
+  mySerial.print("L: ");
+  mySerial.print(leftEncoderCount);
+  mySerial.print(" R: ");
+  mySerial.print(rightEncoderCount);
+}
+
+void DriveForward()
+{
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(FORWARD);
 }
