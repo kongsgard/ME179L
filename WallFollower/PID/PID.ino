@@ -10,9 +10,20 @@
  ********************************************************/
 
 #include <PID_v1.h>
+#include <AFMotor.h>
+#include <SoftwareSerial.h>
 
 #define PIN_INPUT 0
 #define PIN_OUTPUT 3
+#define LCDTxPin        13  // LCD connected to this pin (14 is analog 0)
+#define StartStopButton 11
+#define LeftMotorPin    3   // Left motor is connected to this pin
+#define RightMotorPin   4   // Right motor is connected to this pin
+
+SoftwareSerial mySerial = SoftwareSerial(DummyRxPin, LCDTxPin);  // Change Tx and Rx Pins to pins of our choosing
+
+AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
+AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
 //Define Variables we'll be connecting to
 double Setpoint, Input, Output;
@@ -29,6 +40,13 @@ void setup()
   //initialize the variables we're linked to
   Input = analogRead(PIN_INPUT);
   Setpoint = 100;
+  pinMode(LeftMotorPin, OUTPUT);
+  pinMode(RightMotorPin, OUTPUT);
+  pinMode(PWM1, OUTPUT);
+  pinMode(encodPinA1, INPUT);
+  pinMode(encodPinB1, INPUT);
+  digitalWrite(encodPinA1, HIGH);                      // turn on pullup resistor
+  digitalWrite(encodPinB1, HIGH);
 
   //turn the PID on
   myPID.SetMode(AUTOMATIC);

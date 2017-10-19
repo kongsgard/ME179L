@@ -20,8 +20,6 @@ PID myPID(&Input, &Output, &Setpoint, consKp, consKi, consKd, DIRECT);
 #define DEBUG 1  // By setting DEBUG to either 0 or 1, the program will exclude or include the print statements when it compiles
 
 // Define constants
-#define LeftSwitchPin   14  // Left switch is connected to this pin
-#define RightSwitchPin  15  // Right switch is connected to this pin
 #define LCDTxPin        13  // LCD connected to this pin (14 is analog 0)
 #define DummyRxPin      4   // Not used by LCD Board, can be any unused pin
 #define StartStopButton 11   // Pin to be used by button to either start or stop the robot
@@ -225,7 +223,7 @@ void DriveForward()
 {
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
-  delay(2500);
+  delay(1000);
 }
 
 void DriveBackward()
@@ -238,12 +236,12 @@ void TurnLeft()
 {
   Right_Motor.run(FORWARD);
   Left_Motor.run(BACKWARD);
-  delay(2500);
+  delay(3000);
 }
 
 void TurnRight()
 {
   Right_Motor.run(BACKWARD);
   Left_Motor.run(FORWARD);
-  delay(2500);
+  delay(3000);
 }
