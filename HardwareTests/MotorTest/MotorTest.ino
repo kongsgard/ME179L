@@ -13,7 +13,7 @@ AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz p
 
 void setup()
 {
-  Right_Motor.setSpeed(0.25 * SPEED);
+  Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
 }
 
