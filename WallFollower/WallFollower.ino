@@ -10,8 +10,8 @@
 #define switchPin       11
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
-#define RightMotorPin   3   // Right motor is connected to this pin
-#define LeftMotorPin    4   // Left motor is connected to this pin
+#define RightMotorPin   4   // Right motor is connected to this pin
+#define LeftMotorPin    3   // Left motor is connected to this pin
 #define SPEED           200 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
@@ -58,11 +58,8 @@ void loop() {
   sensorValueLong = analogRead(analogInPinLong);
   input = abs(sensorValueShort - desiredSensorValue);
 
-  output = constrain(input, 0, 255);
-  scaledOutput = 1 - output / 400;
-
-  slowMotorSpeed = constrain(scaledOutput * SPEED, 150, 250);
-  fastMotorSpeed = constrain((1 + scaledOutput) * SPEED, 150, 250);
+  slowMotorSpeed = constrain(SPEED - 100, 100, 250);
+  fastMotorSpeed = constrain(SPEED + 50, 150, 250);
 
   Serial.print(slowMotorSpeed);
   Serial.print(" ");
@@ -132,8 +129,8 @@ void DriveForward()
 {
   //For rear-wheel drive run it BACKWARD
   //For FWD run forward
-  Right_Motor.run(BACKWARD);
-  Left_Motor.run(BACKWARD);
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(FORWARD);
 }
 
 void printDebug()
