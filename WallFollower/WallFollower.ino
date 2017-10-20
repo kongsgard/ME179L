@@ -56,6 +56,12 @@ void setup() {
 
   // Set IR short range setpoint to a value corresponding to 6 cm
   setpoint = 300;
+
+  // Read initial short range sensor value
+  input = analogRead(analogInPinShort);
+
+  // Turn the PID on
+  myPID.SetMode(AUTOMATIC);
 }
 
 void loop() {
@@ -157,7 +163,7 @@ void DriveForward()
 void setPIDTunings()
 {
   double gap = abs(setpoint-input); // Distance away from setpoint
-  if (gap < 10)
+  if (gap < 100)
   {
     // Close to setpoint, use conservative tuning parameters
     myPID.SetTunings(consKp, consKi, consKd);
@@ -173,9 +179,9 @@ void printDebug()
 {
   #ifdef DEBUG
   Serial.print("sensorShort = " );
-  Serial.print(sensorValueShort);
-  Serial.print(" sensorLong = ");
-  Serial.println(sensorValueLong);
+  Serial.println(sensorValueShort);
+  //Serial.print(" sensorLong = ");
+  //Serial.println(sensorValueLong);
 
   Serial.print("PID output: ");
   Serial.println(output);
