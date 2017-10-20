@@ -4,7 +4,7 @@
 #include <PID_v1.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG           1
+//#define DEBUG           1
 
 // Pin constants:
 #define switchPin       11
@@ -12,20 +12,17 @@
 #define rxPin           13  // LCD rx pin (not really used).
 #define RightMotorPin   3   // Right motor is connected to this pin
 #define LeftMotorPin    4   // Left motor is connected to this pin
-#define SPEED           250 // Set speed to be used for motors
+#define SPEED           200 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
-// PID control variables
-double setpoint, input, output;
-
-// Aggressive and conservative Tuning Parameters
-double aggKp = 4, aggKi = 0.2, aggKd = 1;
-double consKp = 1, consKi = 0.05, consKd = 0.25;
-
-// Specify the links and initial tuning parameters
-PID myPID(&input, &output, &setpoint, consKp, consKi, consKd, DIRECT);
+// P controller control variables
+double input, output;
+int desiredSensorValue = 300;
+double scaledOutput    = 1;
+int fastMotorSpeed     = 150;
+int slowMotorSpeed     = 150;
 
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
@@ -36,8 +33,8 @@ int encoderCountGoal = 10;
 const int analogInPinShort = A0; // Analog input from short range reflector
 const int analogInPinLong = A1;  // Analog input from long range reflector
 
-double sensorValueShort = 0;     // Short range sensor value
-double sensorValueLong = 0;      // Long range sensor value
+int sensorValueShort = 0;     // Short range sensor value
+int sensorValueLong = 0;      // Long range sensor value
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -53,59 +50,38 @@ void setup() {
 
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
-
-  // Set IR short range setpoint to a value corresponding to 6 cm
-  setpoint = 300;
-
-  // Read initial short range sensor value
-  input = analogRead(analogInPinShort);
-
-  // Turn the PID on
-  myPID.SetMode(AUTOMATIC);
 }
 
 void loop() {
   // Read IR sensor values
   sensorValueShort = analogRead(analogInPinShort);
   sensorValueLong = analogRead(analogInPinLong);
-  input = sensorValueShort;
+  input = abs(sensorValueShort - desiredSensorValue);
 
-  setPIDTunings();
-  myPID.Compute();
+  output = constrain(input, 0, 255);
+  scaledOutput = 1 - output / 400;
 
-  if (abs(output) < 100)
+  slowMotorSpeed = constrain(scaledOutput * SPEED, 150, 250);
+  fastMotorSpeed = constrain((1 + scaledOutput) * SPEED, 150, 250);
+
+  Serial.print(slowMotorSpeed);
+  Serial.print(" ");
+  Serial.println(fastMotorSpeed);
+
+  // Slight turn
+  if (sensorValueShort > desiredSensorValue)
   {
-    // Slight turn
-    if (output < 0)
-    {
-      // Too close to the wall - turn left
-      Right_Motor.setSpeed(SPEED);
-      Left_Motor.setSpeed(0.6 * SPEED);
-      DriveForward();
-    }
-    else
-    {
-      // Too far from the wall - turn right
-      Right_Motor.setSpeed(0.6 * SPEED);
-      Left_Motor.setSpeed(SPEED);
-      DriveForward();
-    }
+    // Too close to the wall - turn left
+    Right_Motor.setSpeed(fastMotorSpeed);
+    Left_Motor.setSpeed(slowMotorSpeed);
+    DriveForward();
   }
   else
   {
-    // Sharp turn
-    Right_Motor.setSpeed(SPEED);
-    Left_Motor.setSpeed(SPEED);
-    if (output < 0)
-    {
-      // Too close to the wall - turn left
-      SharpTurnLeft();
-    }
-    else
-    {
-      // Too far from the wall - turn right
-      SharpTurnRight();
-    }
+    // Too far from the wall - turn right
+    Right_Motor.setSpeed(slowMotorSpeed);
+    Left_Motor.setSpeed(fastMotorSpeed);
+    DriveForward();
   }
 
   printDebug();
@@ -113,7 +89,7 @@ void loop() {
   // wait 10 milliseconds before the next loop
   // for the analog-to-digital converter to settle
   // after the last reading:
-  delay(500);
+  delay(10);
 }
 
 // --- //
@@ -160,21 +136,6 @@ void DriveForward()
   Left_Motor.run(BACKWARD);
 }
 
-void setPIDTunings()
-{
-  double gap = abs(setpoint-input); // Distance away from setpoint
-  if (gap < 100)
-  {
-    // Close to setpoint, use conservative tuning parameters
-    myPID.SetTunings(consKp, consKi, consKd);
-  }
-  else
-  {
-    // Far from setpoint, use aggressive tuning parameters
-    myPID.SetTunings(aggKp, aggKi, aggKd);
-  }
-}
-
 void printDebug()
 {
   #ifdef DEBUG
@@ -183,7 +144,15 @@ void printDebug()
   //Serial.print(" sensorLong = ");
   //Serial.println(sensorValueLong);
 
+  Serial.print("Input: ");
+  Serial.println(input);
   Serial.print("PID output: ");
   Serial.println(output);
+  Serial.print("Scaled output: ");
+  Serial.println(scaledOutput);
+
+  mySerial.print("?x00?y1");
+  mySerial.print("output: ");
+  mySerial.print(scaledOutput);
   #endif
 }
