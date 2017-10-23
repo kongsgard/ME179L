@@ -21,7 +21,7 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on po
 
 // P controller control variables
 int diff;
-int desiredSensorValue = 150;
+int desiredSensorValue = 145;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
@@ -37,6 +37,10 @@ const int analogInPinLong  = A1; // Analog input from long range reflector
 
 int sensorValueShort = 0;        // Short range sensor value
 int sensorValueLong  = 0;        // Long range sensor value
+
+// Photoresistant sensor:
+const int lightSensorPin = A3;
+int lightSensorThreshold = 100;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -63,10 +67,14 @@ void setup() {
   pinMode(rightEncoderPin, INPUT);
   digitalWrite(rightEncoderPin, HIGH);
 
+  // Set light sensor:
+  pinMode(lightSensorPin, INPUT);
+  digitalWrite(lightSensorPin, HIGH);
+
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
 
-  while (digitalRead(switchPin))
+  while (analogRead(lightSensorPin) > lightSensorThreshold)
   {
     // Wait until switch is pressed.
     delay(150);
