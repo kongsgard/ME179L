@@ -19,7 +19,7 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on po
 
 // P controller control variables
 double input, output;
-int desiredSensorValue = 200;
+int desiredSensorValue = 150;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
