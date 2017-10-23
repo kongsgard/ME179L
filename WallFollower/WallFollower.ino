@@ -4,7 +4,7 @@
 #include <PID_v1.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG           1
+//#define DEBUG           1
 
 // Pin constants:
 #define switchPin       11
@@ -12,13 +12,15 @@
 #define rxPin           13  // LCD rx pin (not really used).
 #define RightMotorPin   4   // Right motor is connected to this pin
 #define LeftMotorPin    3   // Left motor is connected to this pin
+#define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
+#define rightEncoderPin 3
 #define SPEED           200 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
 
 // P controller control variables
-double input, output;
+int diff;
 int desiredSensorValue = 150;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
@@ -27,14 +29,14 @@ int slowMotorSpeed     = 150;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int encoderCountGoal = 10;
+int          encoderCountGoal = 250;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
-const int analogInPinLong = A1;  // Analog input from long range reflector
+const int analogInPinLong  = A1; // Analog input from long range reflector
 
-int sensorValueShort = 0;     // Short range sensor value
-int sensorValueLong = 0;      // Long range sensor value
+int sensorValueShort = 0;        // Short range sensor value
+int sensorValueLong  = 0;        // Long range sensor value
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -48,50 +50,70 @@ void setup() {
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
 
+  // Setup hardware interrupt:
+  int leftInterruptPin = leftEncoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
+  attachInterrupt(leftInterruptPin, incrementLeftEncoder, FALLING);   // Attach interrupt pin, name of function to be called
+  // During interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
+  int rightInterruptPin = rightEncoderPin - 2;
+  attachInterrupt(rightInterruptPin, incrementRightEncoder, FALLING);
+
+  // Setup encoder i.e. break-beam:
+  pinMode(leftEncoderPin, INPUT);
+  digitalWrite(leftEncoderPin, HIGH);
+  pinMode(rightEncoderPin, INPUT);
+  digitalWrite(rightEncoderPin, HIGH);
+
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
+
+  while (digitalRead(switchPin))
+  {
+    // Wait until switch is pressed.
+    delay(150);
+  }
 }
 
 void loop() {
   // Read IR sensor values
   sensorValueShort = analogRead(analogInPinShort);
   sensorValueLong = analogRead(analogInPinLong);
-  input = abs(sensorValueShort - desiredSensorValue);
+  diff = abs(sensorValueShort - desiredSensorValue);
 
-
-
-  mySerial.print("?x00?y1");
-  mySerial.print("L: ");
-  mySerial.print(sensorValueShort);
-
-  //Serial.print(slowMotorSpeed);
-  //Serial.print(" ");
-  //Serial.println(fastMotorSpeed);
-
-  // Slight turn
-  if (sensorValueShort > desiredSensorValue)
+  if (abs(sensorValueShort - desiredSensorValue) < 20)
   {
-    slowMotorSpeed = constrain(150, 100, 250);
-    fastMotorSpeed = constrain(SPEED + input, 150, 250);
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
+
+    DriveForward();
+  }
+  else if (sensorValueShort > desiredSensorValue)
+  {
+    slowMotorSpeed = constrain(SPEED, 100, 250);
+    fastMotorSpeed = constrain(SPEED, 150, 250);
 
     // Too close to the wall - turn left
     Right_Motor.setSpeed(fastMotorSpeed);
     Left_Motor.setSpeed(slowMotorSpeed);
 
-    Right_Motor.run(FORWARD);
-    Left_Motor.run(BACKWARD);
-
-    //DriveForward();
+    SharpTurnLeft();
   }
   else
   {
     // Too far from the wall - turn right
-    slowMotorSpeed = constrain(SPEED - 2 * input, 100, 250);
-    fastMotorSpeed = constrain(SPEED + input, 150, 250);
+    slowMotorSpeed = constrain(SPEED, 100, 250);
+    fastMotorSpeed = constrain(SPEED, 150, 250);
 
     Right_Motor.setSpeed(slowMotorSpeed);
     Left_Motor.setSpeed(fastMotorSpeed);
-    DriveForward();
+
+    SharpTurnRight();
+  }
+
+  if (rightEncoderCount > encoderCountGoal)
+  {
+    // Stop robot after one lap
+    StopMotors();
+    while(true);
   }
 
   printDebug();
@@ -146,6 +168,12 @@ void DriveForward()
   Left_Motor.run(FORWARD);
 }
 
+void StopMotors()
+{
+  Right_Motor.run(RELEASE);
+  Left_Motor.run(RELEASE);
+}
+
 void printDebug()
 {
   #ifdef DEBUG
@@ -154,8 +182,8 @@ void printDebug()
   //Serial.print(" sensorLong = ");
   //Serial.println(sensorValueLong);
 
-  //Serial.print("Input: ");
-  //Serial.println(input);
+  Serial.print("diff: ");
+  Serial.println(diff);
   //Serial.print("PID output: ");
   //Serial.println(output);
   //Serial.print("Scaled output: ");
@@ -164,5 +192,7 @@ void printDebug()
   //mySerial.print("?x00?y1");
   //mySerial.print("output: ");
   //mySerial.print(scaledOutput);
+
+  delay(500);
   #endif
 }
