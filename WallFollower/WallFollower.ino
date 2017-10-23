@@ -19,7 +19,7 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on po
 
 // P controller control variables
 double input, output;
-int desiredSensorValue = 200;
+int desiredSensorValue = 140;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
@@ -69,7 +69,13 @@ void loop() {
   //Serial.println(fastMotorSpeed);
 
   // Slight turn
-  if (sensorValueShort > desiredSensorValue)
+  if (abs(sensorValueShort - desiredSensorValue) < 5)
+  {
+    Right_Motor.setSpeed(SPEED + 50);
+    Left_Motor.setSpeed(SPEED + 50);
+    DriveForward();
+  }
+  else if (sensorValueShort > desiredSensorValue)
   {
     slowMotorSpeed = constrain(150, 100, 250);
     fastMotorSpeed = constrain(SPEED + input, 150, 250);
@@ -80,7 +86,6 @@ void loop() {
 
     Right_Motor.run(FORWARD);
     Left_Motor.run(BACKWARD);
-
     //DriveForward();
   }
   else
