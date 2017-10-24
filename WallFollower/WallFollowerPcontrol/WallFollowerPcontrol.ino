@@ -3,6 +3,7 @@
 #include <AFMotor.h>
 #include <PID_v1.h>
 #include <SoftwareSerial.h>
+#include <math.h>
 
 #define DEBUG           1
 
@@ -12,6 +13,8 @@
 #define rxPin           13  // LCD rx pin (not really used).
 #define RightMotorPin   3   // Right motor is connected to this pin
 #define LeftMotorPin    4   // Left motor is connected to this pin
+#define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
+#define rightEncoderPin 3
 #define SPEED           180 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
@@ -23,12 +26,17 @@ int desiredSensorValue = 145;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
-float Kp = 1.2;
+float Kp = 2.2;
+
+int r = 60; //Set distance r away from wall in mm
+int A = 869.9; //constants for fit function
+int b = -0.1316;
+
 
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int encoderCountGoal = 10;
+int encoderCountGoal = 290;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
@@ -55,41 +63,54 @@ void setup() {
   // Set motor speed:
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
-  DriveForward();
 
   // Set light sensor:
   pinMode(lightSensorPin, INPUT);
   digitalWrite(lightSensorPin, HIGH);
 
+  // Setup hardware interrupt:
+  int leftInterruptPin = leftEncoderPin - 2;   // Hardware interrupt pin (0 or 1 only, to refer to digital pin 2 or 3, respectively).
+  attachInterrupt(leftInterruptPin, incrementLeftEncoder, FALLING);   // Attach interrupt pin, name of function to be called
+  // During interrupt, and whether to run interrupt upon voltage FALLING from high to low or ...
+  int rightInterruptPin = rightEncoderPin - 2;
+  attachInterrupt(rightInterruptPin, incrementRightEncoder, FALLING);
+
+  // Setup encoder i.e. break-beam:
+  pinMode(leftEncoderPin, INPUT);
+  digitalWrite(leftEncoderPin, HIGH);
+  pinMode(rightEncoderPin, INPUT);
+  digitalWrite(rightEncoderPin, HIGH);
+
 
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
-/*while (analogRead(lightSensorPin) <= lightSensorThreshold)
+  /*while (analogRead(lightSensorPin) <= lightSensorThreshold)
   {
     // Wait until switch is pressed.
     delay(150);
   }*/
+  while (digitalRead(switchPin))
+  {
+    // Wait until switch is pressed.
+    delay(150);
+  }
 }
 
 long int lastPrint = 0;
 
 void loop() {
-
-// while (digitalRead(switchPin))
-// {
-//   // Wait until switch is pressed.
-//   delay(150);
-// }
   //Serial.println(analogRead(lightSensorPin));
 
   //mySerial.print(analogRead(lightSensorPin));
   // Read IR sensor values
   sensorValueShort = analogRead(analogInPinShort);
-
+  int dist = floor(log(sensorValueShort/A)/b);
+  int diff = dist - r;
+  float theta = Kp*diff;
   int error = desiredSensorValue - sensorValueShort;
   float Ke = Kp * error;
-  int rightSpeed = constrain(SPEED+int(Ke), 0, 255);
-  int leftSpeed = constrain(SPEED-int(Ke), 0, 255);
+  int rightSpeed = constrain(SPEED+int(theta), 0, 255);
+  int leftSpeed = constrain(SPEED-int(theta), 0, 255);
 
   if(millis() - lastPrint > 200) {
     mySerial.print("?f");
@@ -105,7 +126,14 @@ void loop() {
   Right_Motor.setSpeed(rightSpeed);
   Left_Motor.setSpeed(leftSpeed);
 
+  DriveForward();
 
+  if (rightEncoderCount > encoderCountGoal)
+  {
+    // Stop robot after one lap
+    StopMotors();
+    while(true);
+  }
 
 
 
@@ -160,6 +188,12 @@ void DriveForward()
   //For FWD run forward
   Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
+}
+
+void StopMotors()
+{
+  Right_Motor.run(RELEASE);
+  Left_Motor.run(RELEASE);
 }
 
 void printDebug()
