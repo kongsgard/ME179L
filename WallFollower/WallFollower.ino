@@ -19,7 +19,7 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on po
 
 // P controller control variables
 double input, output;
-int desiredSensorValue = 145;
+int desiredSensorValue = 250;
 double scaledOutput    = 1;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
@@ -39,7 +39,7 @@ int sensorValueLong = 0;      // Long range sensor value
 
 // Photoresistant sensor:
 const int lightSensorPin = A3;
-int lightSensorThreshold = 200;
+int lightSensorThreshold = 250;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -64,11 +64,11 @@ void setup() {
 
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
-/*while (analogRead(lightSensorPin) <= lightSensorThreshold)
+while (analogRead(lightSensorPin) <= lightSensorThreshold)
   {
     // Wait until switch is pressed.
     delay(150);
-  }*/
+  }
 }
 
 long int lastPrint = 0;
