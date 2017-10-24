@@ -22,14 +22,14 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on po
 // P controller control variables
 int diff;
 int desiredSensorValue = 145;
-double scaledOutput    = 1;
+double Kp              = 1.4;
 int fastMotorSpeed     = 150;
 int slowMotorSpeed     = 150;
 
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int          encoderCountGoal = 300;
+int          encoderCountGoal = 290;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
@@ -77,7 +77,8 @@ void setup() {
   // Clear LCD screen
   mySerial.print("?f"); // Send clear screen command to LCD
 
-  while (analogRead(lightSensorPin) > lightSensorThreshold)
+  //while (analogRead(lightSensorPin) > lightSensorThreshold)
+  while (digitalRead(switchPin))
   {
     // Wait until switch is pressed.
     delay(150);
@@ -90,7 +91,7 @@ void loop() {
   sensorValueLong = analogRead(analogInPinLong);
   diff = abs(sensorValueShort - desiredSensorValue);
 
-  if (abs(sensorValueShort - desiredSensorValue) < 15)
+  if (abs(sensorValueShort - desiredSensorValue) < 20)
   {
     Right_Motor.setSpeed(SPEED - 50);
     Left_Motor.setSpeed(SPEED - 50);
@@ -99,25 +100,39 @@ void loop() {
   }
   else if (sensorValueShort > desiredSensorValue)
   {
-    slowMotorSpeed = constrain(SPEED, 0, 255);
-    fastMotorSpeed = constrain(SPEED, 0, 255);
+    slowMotorSpeed = constrain(SPEED - Kp*diff, 0, 255);
+    fastMotorSpeed = constrain(SPEED + Kp*diff, 0, 255);
 
     // Too close to the wall - turn left
     Right_Motor.setSpeed(fastMotorSpeed);
     Left_Motor.setSpeed(slowMotorSpeed);
 
-    SharpTurnRight();
+    if (abs(sensorValueShort - desiredSensorValue) < 50)
+    {
+      DriveForward();
+    }
+    else
+    {
+      SharpTurnRight();
+    }
   }
   else
   {
     // Too far from the wall - turn right
-    slowMotorSpeed = constrain(SPEED, 0, 255);
-    fastMotorSpeed = constrain(SPEED, 0, 255);
+    slowMotorSpeed = constrain(SPEED - Kp*diff, 0, 255);
+    fastMotorSpeed = constrain(SPEED + Kp*diff, 0, 255);
 
     Right_Motor.setSpeed(slowMotorSpeed);
     Left_Motor.setSpeed(fastMotorSpeed);
 
-    SharpTurnLeft();
+    if (abs(sensorValueShort - desiredSensorValue) < 50)
+    {
+      DriveForward();
+    }
+    else
+    {
+      SharpTurnLeft();
+    }
   }
 
   if (rightEncoderCount > encoderCountGoal)
@@ -128,6 +143,11 @@ void loop() {
   }
 
   printDebug();
+
+  Serial.print("S: ");
+  Serial.println(slowMotorSpeed);
+  Serial.print("F: ");
+  Serial.println(fastMotorSpeed);
 
   // wait 10 milliseconds before the next loop
   // for the analog-to-digital converter to settle
