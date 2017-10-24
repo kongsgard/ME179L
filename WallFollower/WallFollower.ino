@@ -10,8 +10,8 @@
 #define switchPin       11
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
-#define RightMotorPin   4   // Right motor is connected to this pin
-#define LeftMotorPin    3   // Left motor is connected to this pin
+#define RightMotorPin   3   // Right motor is connected to this pin
+#define LeftMotorPin    4   // Left motor is connected to this pin
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
 #define rightEncoderPin 3
 #define SPEED           200 // Set speed to be used for motors
@@ -29,7 +29,7 @@ int slowMotorSpeed     = 150;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int          encoderCountGoal = 250;
+int          encoderCountGoal = 300;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
@@ -40,7 +40,7 @@ int sensorValueLong  = 0;        // Long range sensor value
 
 // Photoresistant sensor:
 const int lightSensorPin = A3;
-int lightSensorThreshold = 100;
+int lightSensorThreshold = 200;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -74,6 +74,9 @@ void setup() {
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
 
+  // Clear LCD screen
+  mySerial.print("?f"); // Send clear screen command to LCD
+
   while (analogRead(lightSensorPin) > lightSensorThreshold)
   {
     // Wait until switch is pressed.
@@ -87,34 +90,34 @@ void loop() {
   sensorValueLong = analogRead(analogInPinLong);
   diff = abs(sensorValueShort - desiredSensorValue);
 
-  if (abs(sensorValueShort - desiredSensorValue) < 20)
+  if (abs(sensorValueShort - desiredSensorValue) < 15)
   {
-    Right_Motor.setSpeed(SPEED);
-    Left_Motor.setSpeed(SPEED);
+    Right_Motor.setSpeed(SPEED - 50);
+    Left_Motor.setSpeed(SPEED - 50);
 
     DriveForward();
   }
   else if (sensorValueShort > desiredSensorValue)
   {
-    slowMotorSpeed = constrain(SPEED, 100, 250);
-    fastMotorSpeed = constrain(SPEED, 150, 250);
+    slowMotorSpeed = constrain(SPEED, 0, 255);
+    fastMotorSpeed = constrain(SPEED, 0, 255);
 
     // Too close to the wall - turn left
     Right_Motor.setSpeed(fastMotorSpeed);
     Left_Motor.setSpeed(slowMotorSpeed);
 
-    SharpTurnLeft();
+    SharpTurnRight();
   }
   else
   {
     // Too far from the wall - turn right
-    slowMotorSpeed = constrain(SPEED, 100, 250);
-    fastMotorSpeed = constrain(SPEED, 150, 250);
+    slowMotorSpeed = constrain(SPEED, 0, 255);
+    fastMotorSpeed = constrain(SPEED, 0, 255);
 
     Right_Motor.setSpeed(slowMotorSpeed);
     Left_Motor.setSpeed(fastMotorSpeed);
 
-    SharpTurnRight();
+    SharpTurnLeft();
   }
 
   if (rightEncoderCount > encoderCountGoal)
@@ -158,22 +161,22 @@ void displayEncoderCounts()
 void SharpTurnRight()
 {
 
-  Right_Motor.run(BACKWARD);
-  Left_Motor.run(FORWARD);
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void SharpTurnLeft()
 {
-  Right_Motor.run(FORWARD);
-  Left_Motor.run(BACKWARD);
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(FORWARD);
 }
 
 void DriveForward()
 {
   //For rear-wheel drive run it BACKWARD
   //For FWD run forward
-  Right_Motor.run(FORWARD);
-  Left_Motor.run(FORWARD);
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void StopMotors()
