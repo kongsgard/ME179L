@@ -29,7 +29,7 @@ int slowMotorSpeed     = 150;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int          encoderCountGoal = 300;
+int          encoderCountGoal = 260;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
@@ -92,15 +92,15 @@ void loop() {
 
   if (abs(sensorValueShort - desiredSensorValue) < 15)
   {
-    Right_Motor.setSpeed(SPEED - 50);
-    Left_Motor.setSpeed(SPEED - 50);
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
 
     DriveForward();
   }
   else if (sensorValueShort > desiredSensorValue)
   {
-    slowMotorSpeed = constrain(SPEED, 0, 255);
-    fastMotorSpeed = constrain(SPEED, 0, 255);
+    slowMotorSpeed = constrain(SPEED, 100, 255);
+    fastMotorSpeed = constrain(SPEED, 100, 255);
 
     // Too close to the wall - turn left
     Right_Motor.setSpeed(fastMotorSpeed);
@@ -111,8 +111,8 @@ void loop() {
   else
   {
     // Too far from the wall - turn right
-    slowMotorSpeed = constrain(SPEED, 0, 255);
-    fastMotorSpeed = constrain(SPEED, 0, 255);
+    slowMotorSpeed = constrain(SPEED, 100, 255);
+    fastMotorSpeed = constrain(SPEED, 100, 255);
 
     Right_Motor.setSpeed(slowMotorSpeed);
     Left_Motor.setSpeed(fastMotorSpeed);
