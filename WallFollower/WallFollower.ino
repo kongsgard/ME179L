@@ -29,7 +29,7 @@ int slowMotorSpeed     = 150;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-int          encoderCountGoal = 260;
+int          encoderCountGoal = 265;
 
 // IR sensors:
 const int analogInPinShort = A0; // Analog input from short range reflector
