@@ -3,7 +3,7 @@
 #define txPin           13  // LCD tx pin.
 #define rxPin           13  // LCD rx pin (not really used).
 
-const int LightSensorPin = A2;
+const int LightSensorPin = A3;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -14,7 +14,7 @@ void setup(){
 
   // Setup serial display:
   pinMode(txPin, OUTPUT);
-  mySerial.begin(9600);1
+  mySerial.begin(9600);
 
   // Clear LCD screen
   mySerial.print("?f"); // Send clear screen command to LCD

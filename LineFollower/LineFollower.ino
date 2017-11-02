@@ -1,7 +1,6 @@
-// Counter-clockwise wall follower robot
+// Line follower robot
 
 #include <AFMotor.h>
-#include <PID_v1.h>
 #include <SoftwareSerial.h>
 
 //#define DEBUG           1
@@ -13,11 +12,14 @@
 #define RightMotorPin   3   // Right motor is connected to this pin
 #define LeftMotorPin    4   // Left motor is connected to this pin
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
-#define rightEncoderPin 3
-#define SPEED           200 // Set speed to be used for motors
+#define rightEncoderPin  3
+#define SPEED           170 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
+
+int fastMotorSpeed;
+int slowMotorSpeed;
 
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
@@ -25,6 +27,7 @@ volatile int rightEncoderCount;
 
 // Light sensor:
 const int lightSensorPin = A2;
+unsigned int lightSensorValue;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -64,9 +67,30 @@ void setup() {
 
 void loop() {
   // Read IR sensor values
-  lightSensor = analogRead(lightSensorPin);
+  lightSensorValue = analogRead(lightSensorPin);
 
-  printDebug();
+  if (lightSensorValue < 100)
+  {
+    slowMotorSpeed = constrain(SPEED, 100, 255);
+    fastMotorSpeed = constrain(SPEED, 100, 255);
+
+    // To the right of the line - turn left
+    Right_Motor.setSpeed(fastMotorSpeed);
+    Left_Motor.setSpeed(slowMotorSpeed);
+
+    SharpTurnRight();
+  }
+  else
+  {
+    slowMotorSpeed = constrain(SPEED, 100, 255);
+    fastMotorSpeed = constrain(SPEED, 100, 255);
+
+    // Over the line - turn right
+    Right_Motor.setSpeed(slowMotorSpeed);
+    Left_Motor.setSpeed(fastMotorSpeed);
+
+    SharpTurnLeft();
+  }
 
   // wait 10 milliseconds before the next loop
   // for the analog-to-digital converter to settle
@@ -99,14 +123,13 @@ void displayEncoderCounts()
 
 void SharpTurnRight()
 {
-
-  Right_Motor.run(FORWARD);
+  Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
 }
 
 void SharpTurnLeft()
 {
-  Right_Motor.run(BACKWARD);
+  Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
 }
 
@@ -115,7 +138,7 @@ void DriveForward()
   //For rear-wheel drive run it BACKWARD
   //For FWD run forward
   Right_Motor.run(BACKWARD);
-  Left_Motor.run(BACKWARD);
+  Left_Motor.run(FORWARD);
 }
 
 void StopMotors()
