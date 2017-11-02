@@ -12,8 +12,8 @@
 #define RightMotorPin   3   // Right motor is connected to this pin
 #define LeftMotorPin    4   // Left motor is connected to this pin
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
-#define rightEncoderPin  3
-#define SPEED           170 // Set speed to be used for motors
+#define rightEncoderPin 3
+#define SPEED           250 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
@@ -26,7 +26,7 @@ volatile int leftEncoderCount;   // Use "volatile" for faster updating of value 
 volatile int rightEncoderCount;
 
 // Light sensor:
-const int lightSensorPin = A2;
+const int lightSensorPin = A3;
 unsigned int lightSensorValue;
 
 // LCD Screen:
@@ -69,33 +69,18 @@ void loop() {
   // Read IR sensor values
   lightSensorValue = analogRead(lightSensorPin);
 
-  if (lightSensorValue < 100)
+  if (lightSensorValue < 350)
   {
-    slowMotorSpeed = constrain(SPEED, 100, 255);
-    fastMotorSpeed = constrain(SPEED, 100, 255);
-
     // To the right of the line - turn left
-    Right_Motor.setSpeed(fastMotorSpeed);
-    Left_Motor.setSpeed(slowMotorSpeed);
-
-    SharpTurnRight();
+    TurnRight();
   }
   else
   {
-    slowMotorSpeed = constrain(SPEED, 100, 255);
-    fastMotorSpeed = constrain(SPEED, 100, 255);
-
     // Over the line - turn right
-    Right_Motor.setSpeed(slowMotorSpeed);
-    Left_Motor.setSpeed(fastMotorSpeed);
-
-    SharpTurnLeft();
+    TurnLeft();
   }
 
-  // wait 10 milliseconds before the next loop
-  // for the analog-to-digital converter to settle
-  // after the last reading:
-  delay(10);
+  printDebug();
 }
 
 // --- //
@@ -119,6 +104,18 @@ void displayEncoderCounts()
   mySerial.print(leftEncoderCount);
   mySerial.print(" R: ");
   mySerial.print(rightEncoderCount);
+}
+
+void TurnLeft()
+{
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(RELEASE);
+}
+
+void TurnRight()
+{
+  Left_Motor.run(FORWARD);
+  Right_Motor.run(RELEASE);
 }
 
 void SharpTurnRight()
@@ -151,7 +148,7 @@ void printDebug()
 {
   #ifdef DEBUG
   Serial.print("LightSensor = " );
-  Serial.println(LightSensor);
+  Serial.println(lightSensorValue);
 
 
   delay(500);

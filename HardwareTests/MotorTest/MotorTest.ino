@@ -4,8 +4,6 @@
 // Define constants
 #define LCDTxPin        13  // LCD connected to this pin (14 is analog 0)
 #define DummyRxPin      4   // Not used by LCD Board, can be any unused pin
-#define LeftMotorPin    3   // Left motor is connected to this pin
-#define RightMotorPin   4   // Right motor is connected to this pin
 #define SPEED           200 // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
