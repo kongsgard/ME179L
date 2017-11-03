@@ -3,7 +3,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-//#define DEBUG           1
+// #define DEBUG           1
 
 // Pin constants:
 #define switchPin       11
@@ -30,8 +30,8 @@ const int lightSensorPin = A3;
 unsigned int lightSensorValue;
 
 // IR sensors:
-const int analogInPinShort = A0; // Analog input from short range reflector
-int sensorValueShort = 0;        // Short range sensor value
+const int analogInPinShort = A2; // Analog input from short range reflector
+unsigned int sensorValueShort;   // Short range sensor value
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
@@ -74,13 +74,16 @@ void loop() {
   sensorValueShort = analogRead(analogInPinShort);
   if (sensorValueShort > 500)
   {
+    Left_Motor.run(BACKWARD);
+    Right_Motor.run(RELEASE);
+    delay(30);
+
     SharpTurnLeft();
     delay(50);
   }
 
   // Read IR sensor values
   lightSensorValue = analogRead(lightSensorPin);
-
   if (lightSensorValue < 350)
   {
     // To the right of the line - turn left
@@ -93,6 +96,7 @@ void loop() {
   }
 
   printDebug();
+
 }
 
 // --- //
@@ -130,16 +134,16 @@ void TurnRight()
   Right_Motor.run(RELEASE);
 }
 
-void SharpTurnRight()
-{
-  Right_Motor.run(BACKWARD);
-  Left_Motor.run(BACKWARD);
-}
-
 void SharpTurnLeft()
 {
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
+}
+
+void SharpTurnRight()
+{
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void DriveForward()
