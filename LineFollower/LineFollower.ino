@@ -26,7 +26,7 @@ int slowMotorSpeed;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
-unsigned int encoderCountGoal = 250;
+unsigned int encoderCountGoal = 405;
 
 // Light sensor:
 const int lightSensorPin = A3;
