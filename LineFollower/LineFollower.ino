@@ -1,4 +1,6 @@
 // Line follower robot
+// Start from the RIGHT side of the board, for the encoderCountGoal
+// to be correct, so the robot stops on top of the ramp.
 
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
@@ -24,6 +26,7 @@ int slowMotorSpeed;
 // Encoder variables:
 volatile int leftEncoderCount;   // Use "volatile" for faster updating of value during hardware interrupts.
 volatile int rightEncoderCount;
+unsigned int encoderCountGoal = 250;
 
 // Light sensor:
 const int lightSensorPin = A3;
@@ -97,6 +100,11 @@ void loop() {
 
   printDebug();
 
+  if (rightEncoderCount > encoderCountGoal)
+  {
+    StopMotors();
+    while(true){}
+  }
 }
 
 // --- //
@@ -168,6 +176,9 @@ void printDebug()
 
   Serial.print("RangeSensor = " );
   Serial.println(sensorValueShort);
+
+  Serial.print("RightEncoderCount = ");
+  Serial.println(rightEncoderCount);
 
   delay(500);
   #endif
