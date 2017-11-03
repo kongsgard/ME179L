@@ -132,14 +132,20 @@ void displayEncoderCounts()
 
 void TurnLeft()
 {
+  Right_Motor.setSpeed(SPEED);
+  Left_Motor.setSpeed(SPEED - 150);
+
   Right_Motor.run(BACKWARD);
-  Left_Motor.run(RELEASE);
+  Left_Motor.run(FORWARD);
 }
 
 void TurnRight()
 {
-  Left_Motor.run(FORWARD);
-  Right_Motor.run(RELEASE);
+  Right_Motor.setSpeed(SPEED - 150);
+  Left_Motor.setSpeed(SPEED);
+
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void SharpTurnLeft()
