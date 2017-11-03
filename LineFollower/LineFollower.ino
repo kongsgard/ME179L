@@ -29,6 +29,10 @@ volatile int rightEncoderCount;
 const int lightSensorPin = A3;
 unsigned int lightSensorValue;
 
+// IR sensors:
+const int analogInPinShort = A0; // Analog input from short range reflector
+int sensorValueShort = 0;        // Short range sensor value
+
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
@@ -66,6 +70,14 @@ void setup() {
 }
 
 void loop() {
+  // Read short range sensor value
+  sensorValueShort = analogRead(analogInPinShort);
+  if (sensorValueShort > 500)
+  {
+    SharpTurnLeft();
+    delay(50);
+  }
+
   // Read IR sensor values
   lightSensorValue = analogRead(lightSensorPin);
 
@@ -150,6 +162,8 @@ void printDebug()
   Serial.print("LightSensor = " );
   Serial.println(lightSensorValue);
 
+  Serial.print("RangeSensor = " );
+  Serial.println(sensorValueShort);
 
   delay(500);
   #endif
