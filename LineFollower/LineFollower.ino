@@ -136,7 +136,7 @@ void TurnLeft()
   Left_Motor.setSpeed(SPEED - 150);
 
   Right_Motor.run(BACKWARD);
-  Left_Motor.run(FORWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void TurnRight()
@@ -145,7 +145,7 @@ void TurnRight()
   Left_Motor.setSpeed(SPEED);
 
   Right_Motor.run(FORWARD);
-  Left_Motor.run(BACKWARD);
+  Left_Motor.run(FORWARD);
 }
 
 void SharpTurnLeft()
