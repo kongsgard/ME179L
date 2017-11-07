@@ -15,7 +15,7 @@
 #define LeftMotorPin    4   // Left motor is connected to this pin
 #define leftEncoderPin  2   // Encoder i.e. break-beam sensor (2 or 3 only, to allow hardware interrupt)
 #define rightEncoderPin 3
-#define SPEED           250 // Set speed to be used for motors
+#define SPEED           200     // Set speed to be used for motors
 
 AF_DCMotor Left_Motor(LeftMotorPin, MOTOR34_1KHZ); // Set up left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // Set up right motor on port 3, 1KHz pwm
@@ -30,7 +30,9 @@ unsigned int encoderCountGoal = 405;
 
 // Light sensor:
 const int lightSensorPin = A3;
-unsigned int lightSensorValue;
+const int lightSensorPin2 = A4;
+unsigned int lightSensorValue1;
+unsigned int lightSensorValue2;
 
 // IR sensors:
 const int analogInPinShort = A2; // Analog input from short range reflector
@@ -86,17 +88,34 @@ void loop() {
   }
 
   // Read IR sensor values
-  lightSensorValue = analogRead(lightSensorPin);
-  if (lightSensorValue < 350)
+  lightSensorValue1 = analogRead(lightSensorPin);
+  lightSensorValue2 = analogRead(lightSensorPin2);
+  
+  if (lightSensorValue1 < 350 && lightSensorValue2 < 350)
   {
     // To the right of the line - turn left
+    //TurnRight();
+    DriveForward();//If both sensors see white, then they will drive forward
+  }
+  else if(lightSensorValue1 > 350 && lightSensorValue2 < 350)
+  {
     TurnRight();
   }
-  else
+  else if(lightSensorValue1 < 350 && lightSensorValue2 > 350)
   {
-    // Over the line - turn right
     TurnLeft();
   }
+  
+  else
+  {
+    StopMotors();
+  }
+
+//  else
+//  {
+//    // Over the line - turn right
+//    TurnLeft();
+//  }
 
   printDebug();
 
