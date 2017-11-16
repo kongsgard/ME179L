@@ -5,11 +5,12 @@
 #include <SoftwareSerial.h>
 
 // Pin defines:
-#define killSwitchPin 2
-#define leftMotorPin  3
-#define RightMotorPin 4
-#define armServoPin   9
-#define towerServoPin 10
+#define killSwitchPin  2
+#define leftMotorPin   3
+#define RightMotorPin  4
+#define armServoPin    9
+#define towerServoPin  10
+#define lightSensorPin A2
 
 #define SPEED 255
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -18,6 +19,8 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on po
 // TODO: define servo angle constants on "attack" mode
 Servo armServo;  // create servo object to control a servo
 Servo towerServo;  // create servo object to control a servo
+
+const unsigned int lightSensorThreshold = 200;
 
 void setup() {
   armServo.attach(armServoPin);
@@ -29,15 +32,15 @@ void setup() {
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
 
-  servo1.write(180); // Move to 0 degrees
-  servo2.write(180); // Move to 120 degrees
+  armServo.write(180); // Move to 0 degrees
+  towerServo.write(180); // Move to 120 degrees
 
-  while(digitalRead(switchPin1)) {}
+  while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {}
 }
 
 void loop() {
-  servo1.write(140); // Move to 0 degrees
-  servo2.write(105); // Move to 120 degrees
+  armServo.write(140); // Move to 0 degrees
+  towerServo.write(105); // Move to 120 degrees
 
   DriveForward();
   delay(1000);

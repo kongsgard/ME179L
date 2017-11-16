@@ -38,9 +38,7 @@ const int analogInPinLong  = A1; // Analog input from long range reflector
 int sensorValueShort = 0;        // Short range sensor value
 int sensorValueLong  = 0;        // Long range sensor value
 
-// Photoresistant sensor:
-const int lightSensorPin = A3;
-int lightSensorThreshold = 200;
+const unsigned int lightSensorThreshold = 200;
 
 // LCD Screen:
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
