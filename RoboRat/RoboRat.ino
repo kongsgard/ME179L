@@ -4,13 +4,20 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
+#define DEBUG 1
+
 // Pin defines:
 #define killSwitchPin  2
 #define leftMotorPin   3
 #define RightMotorPin  4
 #define armServoPin    9
 #define towerServoPin  10
+#define txPin          13  // LCD tx pin.
+#define rxPin          13  // LCD rx pin (not really used)
+#define leftIRPin      A0
+#define rightIRPin     A1
 #define lightSensorPin A2
+#define longRangePin   A3
 
 #define SPEED 255
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -22,18 +29,45 @@ Servo towerServo;  // create servo object to control a servo
 
 const unsigned int lightSensorThreshold = 200;
 
+unsigned int leftIRValue    = 0;
+unsigned int rightIRValue   = 0;
+unsigned int longRangeValue = 0;
+
+SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
+
 void setup() {
-  armServo.attach(armServoPin);
-  towerServo.attach(towerServoPin);
+  #ifdef DEBUG
+  // Initialize serial communications at 9600 bps:
+  Serial.begin(9600);
 
-  pinMode(killSwitchPin, INPUT);
-  digitalWrite(killSwitchPin, HIGH);
+  // LCD display:
+  pinMode(txPin, OUTPUT);
+  mySerial.begin(9600);
+  mySerial.print("?f"); // Send clear screen command to LCD
+  #endif
 
+  // Motors:
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
 
+  // Servos
+  armServo.attach(armServoPin);
+  towerServo.attach(towerServoPin);
+
   armServo.write(180); // Move to 0 degrees
   towerServo.write(180); // Move to 120 degrees
+
+  // Kill switch:
+  pinMode(killSwitchPin, INPUT);
+  digitalWrite(killSwitchPin, HIGH);
+
+  // Light sensor:
+  pinMode(lightSensorPin, INPUT);
+  digitalWrite(lightSensorPin, HIGH);
+
+  // IR sensors:
+  pinMode(leftIRPin, INPUT_PULLUP);
+  pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {}
 }
@@ -57,30 +91,65 @@ void loop() {
 //  DriveForward();
 //  delay(5000);
 //
+
+    #ifdef DEBUG
+    printDebugHost();
+    //printDebugLCD();
+    #endif
 }
 
 
-void DriveForward(){
+void DriveForward()
+{
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
 }
 
-void DriveBack(){
+void DriveBack()
+{
   Right_Motor.run(BACKWARD);
   Left_Motor.run(BACKWARD);
 }
 
-void TurnLeft() {
+void TurnLeft()
+{
   Right_Motor.run(FORWARD);
   Left_Motor.run(BACKWARD);
 }
 
-void TurnRight() {
+void TurnRight()
+{
   Right_Motor.run(BACKWARD);
   Left_Motor.run(FORWARD);
 }
 
-void StopMotors(){
+void StopMotors()
+{
   Right_Motor.run(RELEASE);
   Left_Motor.run(RELEASE);
+}
+
+void printDebugHost()
+{
+  Serial.print("lightSensor = ");
+  Serial.println(analogRead(lightSensorPin));
+
+  Serial.print("leftIRValue = ");
+  Serial.println(analogRead(leftIRPin));
+  Serial.print("rightIRValue = ");
+  Serial.println(analogRead(rightIRPin));
+
+  Serial.print("longRangeValue = ");
+  Serial.println(analogRead(longRangePin));
+
+  delay(500);
+}
+
+void printDebugLCD()
+{
+  mySerial.print("?x00?y1");
+  mySerial.print("L: ");
+  mySerial.print(leftIRPin);
+  mySerial.print(" R: ");
+  mySerial.print(rightIRPin);
 }
