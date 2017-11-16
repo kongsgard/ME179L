@@ -1,49 +1,70 @@
-#include <Servo.h> 
+// RoboRat - a cheese picking robot
+
+#include <Servo.h>
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-// Set up motor contacts and servo pins______________________________
-#define switchPin1 2
-Servo servo1;  // create servo object to control a servo
-Servo servo2;  // create servo object to control a servo
+// Pin defines:
+#define killSwitchPin 2
+#define leftMotorPin  3
+#define RightMotorPin 4
+#define armServoPin   9
+#define towerServoPin 10
 
-#define SPEED 175
+#define SPEED 255
+AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
+AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
 
-
-AF_DCMotor Right_Motor(4, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
-AF_DCMotor Left_Motor(3, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
+// TODO: define servo angle constants on "attack" mode
+Servo armServo;  // create servo object to control a servo
+Servo towerServo;  // create servo object to control a servo
 
 void setup() {
-  servo1.attach(9);  // attaches the servo on pin 9 to the servo object
-  servo2.attach(10);  // attaches the servo on pin 10 to the servo object 
+  armServo.attach(armServoPin);
+  towerServo.attach(towerServoPin);
 
-  pinMode(switchPin1, INPUT); 
-  digitalWrite(switchPin1, HIGH);  
-  
+  pinMode(killSwitchPin, INPUT);
+  digitalWrite(killSwitchPin, HIGH);
+
   Right_Motor.setSpeed(SPEED);
   Left_Motor.setSpeed(SPEED);
 
+  servo1.write(180); // Move to 0 degrees
+  servo2.write(180); // Move to 120 degrees
 
   while(digitalRead(switchPin1)) {}
 }
 
-
 void loop() {
-  servo1.write(52); // Move to 0 degrees
-  servo2.write(135); // Move to 120 degrees
+  servo1.write(140); // Move to 0 degrees
+  servo2.write(105); // Move to 120 degrees
 
   DriveForward();
+  delay(1000);
+
+//  TurnLeft();
+//  delay(200);
+//
+//  DriveForward();
+//  delay(1000);
+//
+//  TurnRight();
+//  delay(200);
+//
+//  DriveForward();
+//  delay(5000);
+//
 }
 
 
 void DriveForward(){
-  Right_Motor.run(BACKWARD);
-  Left_Motor.run(BACKWARD);
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(FORWARD);
 }
 
 void DriveBack(){
-  Right_Motor.run(FORWARD);
-  Left_Motor.run(FORWARD);
+  Right_Motor.run(BACKWARD);
+  Left_Motor.run(BACKWARD);
 }
 
 void TurnLeft() {
@@ -58,5 +79,5 @@ void TurnRight() {
 
 void StopMotors(){
   Right_Motor.run(RELEASE);
-  Left_Motor.run(RELEASE);  
+  Left_Motor.run(RELEASE);
 }
