@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -23,6 +23,8 @@
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
 
+#define black 300
+
 // TODO: define servo angle constants on "attack" mode
 Servo armServo;  // create servo object to control a servo
 Servo towerServo;  // create servo object to control a servo
@@ -35,15 +37,16 @@ unsigned int longRangeValue = 0;
 
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
-void setup() {
+void setup()
+{
   #ifdef DEBUG
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
 
   // LCD display:
   pinMode(txPin, OUTPUT);
-  mySerial.begin(9600);
-  mySerial.print("?f"); // Send clear screen command to LCD
+  Serial.begin(9600);
+  Serial.print("?f"); // Send clear screen command to LCD
   #endif
 
   // Motors:
@@ -70,34 +73,50 @@ void setup() {
   pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {}
-}
-
-void loop() {
   armServo.write(140); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
 
   DriveForward();
-  delay(1000);
-
-//  TurnLeft();
-//  delay(200);
-//
-//  DriveForward();
-//  delay(1000);
-//
-//  TurnRight();
-//  delay(200);
-//
-//  DriveForward();
-//  delay(5000);
-//
-
-    #ifdef DEBUG
-    printDebugHost();
-    //printDebugLCD();
-    #endif
 }
 
+void loop()
+{
+  leftIRValue = analogRead(leftIRPin);
+  rightIRValue = analogRead(rightIRPin);
+
+  if (leftIRValue < black && rightIRValue < black)
+  {
+    //BOTH WHITE
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
+  }
+  else if (leftIRValue < black && rightIRValue > black)
+  {
+    //TURN RIGHT
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(0);
+  }
+  else if (leftIRValue > black && rightIRValue < black)
+  {
+    //TURN LEFT
+    Right_Motor.setSpeed(0);
+    Left_Motor.setSpeed(SPEED);
+  }
+  else
+  {
+    //BOTH BLACK
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
+    DriveForward();
+  }
+
+  #ifdef DEBUG
+  printDebugHost();
+  //printDebugLCD();
+  #endif
+}
+
+// --- //
 
 void DriveForward()
 {
@@ -152,4 +171,12 @@ void printDebugLCD()
   mySerial.print(leftIRPin);
   mySerial.print(" R: ");
   mySerial.print(rightIRPin);
+}
+
+void DataDisplay(){
+  mySerial.print("?f");          //Clears LCD screen
+  mySerial.print("?x00?y0");     //Sets Cursor to x00,y0
+  mySerial.print(leftIRValue);
+  mySerial.print("?x08?y0");     //Sets Cursor to x00,y0
+  mySerial.print(rightIRValue);
 }
