@@ -110,6 +110,9 @@ void loop()
     DriveForward();
   }
 
+  // Stop robot if killSwitch is pressed
+  while(digitalRead(killSwitchPin)) {}
+
   #ifdef DEBUG
   printDebugHost();
   //printDebugLCD();
