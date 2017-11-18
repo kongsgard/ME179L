@@ -37,6 +37,8 @@ unsigned int longRangeValue = 0;
 
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
+unsigned long time;
+
 void setup()
 {
   #ifdef DEBUG
@@ -77,6 +79,7 @@ void setup()
   towerServo.write(105); // Move to 120 degrees
 
   DriveForward();
+  time = millis();
 }
 
 void loop()
@@ -84,19 +87,19 @@ void loop()
   leftIRValue = analogRead(leftIRPin);
   rightIRValue = analogRead(rightIRPin);
 
-  if (leftIRValue < black && rightIRValue < black)
+  if(leftIRValue < black && rightIRValue < black)
   {
     //BOTH WHITE
     Right_Motor.setSpeed(SPEED);
     Left_Motor.setSpeed(SPEED);
   }
-  else if (leftIRValue < black && rightIRValue > black)
+  else if(leftIRValue < black && rightIRValue > black)
   {
     //TURN RIGHT
     Right_Motor.setSpeed(SPEED);
     Left_Motor.setSpeed(0);
   }
-  else if (leftIRValue > black && rightIRValue < black)
+  else if(leftIRValue > black && rightIRValue < black)
   {
     //TURN LEFT
     Right_Motor.setSpeed(0);
@@ -111,7 +114,11 @@ void loop()
   }
 
   // Stop robot if killSwitch is pressed
-  while(digitalRead(killSwitchPin)) {}
+  if (millis() - time > 1000 && !digitalRead(killSwitchPin))
+  {
+      StopMotors();
+      while(true) {}
+  }
 
   #ifdef DEBUG
   printDebugHost();
