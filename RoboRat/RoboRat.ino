@@ -89,6 +89,26 @@ void setup()
 
 void loop()
 {
+  switch(lane) // Choose which lane to go for first (the GOLDEN lane!)
+  {
+    case 1:
+      break;
+    case 2:
+      followMiddleLane();
+    case 3;
+      break:
+  }
+
+  #ifdef DEBUG
+  //printDebugHost();
+  //printDebugLCD();
+  #endif
+}
+
+// --- //
+
+void followMiddleLane()
+{
   leftIRValue = analogRead(leftIRPin);
   rightIRValue = analogRead(rightIRPin);
 
@@ -118,17 +138,7 @@ void loop()
     DriveForward();
   }
 
-  // Stop robot if killSwitch is pressed
-  if (millis() - time > 1000 && !digitalRead(killSwitchPin))
-  {
-      StopMotors();
-      while(true) {}
-  }
-
-  #ifdef DEBUG
-  //printDebugHost();
-  //printDebugLCD();
-  #endif
+  killSwitch();
 }
 
 // --- //
@@ -172,6 +182,16 @@ void changeLaneSetting()
     }
     //Serial.print("lane = ");
     //Serial.println(lane);
+}
+
+void killSwitch()
+{
+  // Stop robot if killSwitch is pressed
+  if (millis() - time > 1000 && !digitalRead(killSwitchPin))
+  {
+      StopMotors();
+      while(true) {}
+    }
 }
 
 void printDebugHost()
