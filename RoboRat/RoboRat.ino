@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-// #define DEBUG 1
+#define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -18,6 +18,7 @@
 #define rightIRPin     A1
 #define lightSensorPin A2
 #define longRangePin   A3
+#define settingsPin    18
 
 #define SPEED 255
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -34,6 +35,8 @@ const unsigned int lightSensorThreshold = 200;
 unsigned int leftIRValue    = 0;
 unsigned int rightIRValue   = 0;
 unsigned int longRangeValue = 0;
+
+unsigned int lane = 0;
 
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
@@ -74,7 +77,9 @@ void setup()
   pinMode(leftIRPin, INPUT_PULLUP);
   pinMode(rightIRPin, INPUT_PULLUP);
 
-  while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {}
+  while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {
+    changeLaneSetting();
+  }
   armServo.write(140); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
 
@@ -121,7 +126,7 @@ void loop()
   }
 
   #ifdef DEBUG
-  printDebugHost();
+  //printDebugHost();
   //printDebugLCD();
   #endif
 }
@@ -156,6 +161,17 @@ void StopMotors()
 {
   Right_Motor.run(RELEASE);
   Left_Motor.run(RELEASE);
+}
+
+void changeLaneSetting()
+{
+    lane = analogRead(settingsPin) / 300 + 1;
+    if(lane = 4)
+    {
+      lane = 3;
+    }
+    //Serial.print("lane = ");
+    //Serial.println(lane);
 }
 
 void printDebugHost()
