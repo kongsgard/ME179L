@@ -5,7 +5,7 @@ one Analog inputs and serial output
 // These constants won't change.  They're used to give names
 // to the pins used:
 
-const int analogInPin = A0;
+const int analogInPin = A5;
 
 void setup() {
   // initialize serial communications at 9600 bps:

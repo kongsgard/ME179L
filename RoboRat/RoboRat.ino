@@ -17,8 +17,8 @@
 #define leftIRPin      A0
 #define rightIRPin     A1
 #define lightSensorPin A2
-#define longRangePin   A3
-#define settingsPin    18
+#define settingsPin    18 // A4
+#define longRangePin   A5
 
 #define SPEED 255
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -82,20 +82,22 @@ void setup()
 
 void loop()
 {
+  #ifdef DEBUG
+  printDebug();
+  #endif
+
+  /*
   switch(lane) // Choose which lane to go for first (the GOLDEN lane!)
   {
     case 1:
       break;
     case 2:
       followMiddleLane();
-    case 3;
-      break:
+    case 3:
+      break;
   }
+  */
 
-  #ifdef DEBUG
-  //printDebugHost();
-  //printDebugLCD();
-  #endif
 }
 
 // --- //
