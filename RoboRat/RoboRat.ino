@@ -38,8 +38,6 @@ unsigned int longRangeValue = 0;
 
 unsigned int lane = 0;
 
-SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
-
 unsigned long time;
 
 void setup()
@@ -47,11 +45,6 @@ void setup()
   #ifdef DEBUG
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
-
-  // LCD display:
-  pinMode(txPin, OUTPUT);
-  Serial.begin(9600);
-  Serial.print("?f"); // Send clear screen command to LCD
   #endif
 
   // Motors:
@@ -194,35 +187,18 @@ void killSwitch()
     }
 }
 
-void printDebugHost()
+void printDebug()
 {
-  Serial.print("lightSensor = ");
-  Serial.println(analogRead(lightSensorPin));
+  //Serial.print("lightSensor = ");
+  //Serial.println(analogRead(lightSensorPin));
 
-  Serial.print("leftIRValue = ");
-  Serial.println(analogRead(leftIRPin));
-  Serial.print("rightIRValue = ");
-  Serial.println(analogRead(rightIRPin));
+  //Serial.print("leftIRValue = ");
+  //Serial.println(analogRead(leftIRPin));
+  //Serial.print("rightIRValue = ");
+  //Serial.println(analogRead(rightIRPin));
 
   Serial.print("longRangeValue = ");
   Serial.println(analogRead(longRangePin));
 
   delay(500);
-}
-
-void printDebugLCD()
-{
-  mySerial.print("?x00?y1");
-  mySerial.print("L: ");
-  mySerial.print(leftIRPin);
-  mySerial.print(" R: ");
-  mySerial.print(rightIRPin);
-}
-
-void DataDisplay(){
-  mySerial.print("?f");          //Clears LCD screen
-  mySerial.print("?x00?y0");     //Sets Cursor to x00,y0
-  mySerial.print(leftIRValue);
-  mySerial.print("?x08?y0");     //Sets Cursor to x00,y0
-  mySerial.print(rightIRValue);
 }
