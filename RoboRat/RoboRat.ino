@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-//#define DEBUG 1
+#define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -41,6 +41,19 @@ unsigned int frontSensorValue = 0;
 unsigned int lane = 0;
 
 unsigned long time;
+
+// P-controller
+float gain1;
+int   error1;
+int   offset1;
+float gain2;
+int   error2;
+int   offset2;
+
+int leftMotorSpeed;
+int rightMotorSpeed;
+
+// --- //
 
 void setup()
 {
@@ -140,34 +153,43 @@ void followMiddleLane()
   }
 }
 
-// --- //
 void followWall()
 {
   sideSensorValue = analogRead(sideRangePin);
   frontSensorValue = analogRead(frontRangePin);
 
-  Right_Motor.run(FORWARD);
-  Left_Motor.run(FORWARD);
+  gain1 = -1.5;
+  error1 = 125 - sideSensorValue;
+  offset1 = gain1 * error1;
 
-  SPEED = 220;
-  float gain1 = -100;
+  leftMotorSpeed = min(255, max(0, SPEED + offset1));
+  rightMotorSpeed = min(255, max(0, SPEED - 2*offset1));
 
-  unsigned int error1 = 175 - sideSensorValue;
-  int offset1 = gain1 * error1;
+  Left_Motor.setSpeed(leftMotorSpeed);
+  Right_Motor.setSpeed(rightMotorSpeed);
 
-  Left_Motor.setSpeed(min(255, max(0, SPEED - offset1)));
-  Right_Motor.setSpeed(min(255, max(0, SPEED + offset1)));
+  gain2 = -10;
+  error2 = 200 - frontSensorValue;
+  offset2 = gain2 * error2;
 
-  float gain2 = -10;
-  unsigned int error2 = 175 - frontSensorValue;
-  int offset2 = gain2 * error2;
+  if (error2 < 0)
+  {
+    Left_Motor.setSpeed(min(255, max(0, SPEED + offset2)));
+    Right_Motor.setSpeed(min(255, max(0, SPEED - offset2)));
+  }
 
-  if (error2 < 0) {
-        Left_Motor.setSpeed(min(255, max(0, SPEED - offset2)));
-        Right_Motor.setSpeed(min(255, max(0, SPEED + offset2)));
-      }
+  Serial.print("offset2: ");
+  Serial.println(offset2);
+
+  Serial.print("leftMotorSpeed: ");
+  Serial.println(leftMotorSpeed);
+  Serial.print("rightMotorSpeed: ");
+  Serial.println(rightMotorSpeed);
+
+  DriveForward();
 }
 
+// --- //
 
 void DriveForward()
 {
