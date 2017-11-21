@@ -99,6 +99,8 @@ void loop()
       break;
   }
 
+  killSwitch();
+
   #ifdef DEBUG
   printDebug();
   #endif
@@ -136,8 +138,6 @@ void followMiddleLane()
     Left_Motor.setSpeed(SPEED);
     DriveForward();
   }
-
-  killSwitch();
 }
 
 // --- //
@@ -149,17 +149,17 @@ void followWall()
   Right_Motor.run(FORWARD);
   Left_Motor.run(FORWARD);
 
-  SPEED = 200;
-  float gain1 = -.7;
+  SPEED = 220;
+  float gain1 = -100;
 
-  int error1 = 165 - sideSensorValue;
+  unsigned int error1 = 175 - sideSensorValue;
   int offset1 = gain1 * error1;
 
   Left_Motor.setSpeed(min(255, max(0, SPEED - offset1)));
   Right_Motor.setSpeed(min(255, max(0, SPEED + offset1)));
 
   float gain2 = -10;
-  int error2 = 165 - frontSensorValue;
+  unsigned int error2 = 175 - frontSensorValue;
   int offset2 = gain2 * error2;
 
   if (error2 < 0) {
