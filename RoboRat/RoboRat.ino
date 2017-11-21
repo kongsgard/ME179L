@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -39,6 +39,7 @@ unsigned int sideSensorValue  = 0;
 unsigned int frontSensorValue = 0;
 
 unsigned int lane = 0;
+unsigned int wallThreshold = 300;
 
 unsigned long time;
 
@@ -46,9 +47,6 @@ unsigned long time;
 float gain1;
 int   error1;
 int   offset1;
-float gain2;
-int   error2;
-int   offset2;
 
 int leftMotorSpeed;
 int rightMotorSpeed;
@@ -87,7 +85,7 @@ void setup()
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {
     //changeLaneSetting();
-    lane = 1; // TODO: remove
+    lane = 2; // TODO: remove
   }
   armServo.write(140); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
@@ -104,8 +102,14 @@ void loop()
       followWall();
       break;
     case 2:
+      delay(100);
       followMiddleLane();
-      // when close to wall, change lane to 3
+      frontSensorValue = analogRead(frontRangePin);
+      if (frontSensorValue > wallThreshold)
+      {
+          SharpTurnRight();
+          lane = 1;
+      }
       break;
     case 3:
       followWall();
@@ -168,25 +172,14 @@ void followWall()
   Left_Motor.setSpeed(leftMotorSpeed);
   Right_Motor.setSpeed(rightMotorSpeed);
 
-  gain2 = -10;
-  error2 = 200 - frontSensorValue;
-  offset2 = gain2 * error2;
-
-  if (error2 < 0)
+  if (frontSensorValue > wallThreshold)
   {
-    Left_Motor.setSpeed(min(255, max(0, SPEED + offset2)));
-    Right_Motor.setSpeed(min(255, max(0, SPEED - offset2)));
+    SharpTurnRight();
   }
-
-  Serial.print("offset2: ");
-  Serial.println(offset2);
-
-  Serial.print("leftMotorSpeed: ");
-  Serial.println(leftMotorSpeed);
-  Serial.print("rightMotorSpeed: ");
-  Serial.println(rightMotorSpeed);
-
-  DriveForward();
+  else
+  {
+    DriveForward();
+  }
 }
 
 // --- //
@@ -230,6 +223,16 @@ void changeLaneSetting()
     }
     //Serial.print("lane = ");
     //Serial.println(lane);
+}
+
+void SharpTurnRight()
+{
+  Left_Motor.setSpeed(255);
+  Right_Motor.setSpeed(255);
+  DriveBack();
+  delay(100);
+  TurnRight();
+  delay(750);
 }
 
 void killSwitch()
