@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -18,9 +18,10 @@
 #define rightIRPin     A1
 #define lightSensorPin A2
 #define settingsPin    18 // A4
-#define longRangePin   A5
+#define frontRangePin  A4
+#define sideRangePin   A5
 
-#define SPEED 255
+unsigned int SPEED = 255;
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
 
@@ -32,9 +33,10 @@ Servo towerServo;  // create servo object to control a servo
 
 const unsigned int lightSensorThreshold = 200;
 
-unsigned int leftIRValue    = 0;
-unsigned int rightIRValue   = 0;
-unsigned int longRangeValue = 0;
+unsigned int leftIRValue      = 0;
+unsigned int rightIRValue     = 0;
+unsigned int sideSensorValue  = 0;
+unsigned int frontSensorValue = 0;
 
 unsigned int lane = 0;
 
@@ -71,7 +73,8 @@ void setup()
   pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {
-    changeLaneSetting();
+    //changeLaneSetting();
+    lane = 1; // TODO: remove
   }
   armServo.write(140); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
@@ -82,22 +85,23 @@ void setup()
 
 void loop()
 {
-  #ifdef DEBUG
-  printDebug();
-  #endif
-
-  /*
   switch(lane) // Choose which lane to go for first (the GOLDEN lane!)
   {
     case 1:
+      followWall();
       break;
     case 2:
       followMiddleLane();
+      // when close to wall, change lane to 3
+      break;
     case 3:
+      followWall();
       break;
   }
-  */
 
+  #ifdef DEBUG
+  printDebug();
+  #endif
 }
 
 // --- //
@@ -137,6 +141,33 @@ void followMiddleLane()
 }
 
 // --- //
+void followWall()
+{
+  sideSensorValue = analogRead(sideRangePin);
+  frontSensorValue = analogRead(frontRangePin);
+
+  Right_Motor.run(FORWARD);
+  Left_Motor.run(FORWARD);
+
+  SPEED = 200;
+  float gain1 = -.7;
+
+  int error1 = 165 - sideSensorValue;
+  int offset1 = gain1 * error1;
+
+  Left_Motor.setSpeed(min(255, max(0, SPEED - offset1)));
+  Right_Motor.setSpeed(min(255, max(0, SPEED + offset1)));
+
+  float gain2 = -10;
+  int error2 = 165 - frontSensorValue;
+  int offset2 = gain2 * error2;
+
+  if (error2 < 0) {
+        Left_Motor.setSpeed(min(255, max(0, SPEED - offset2)));
+        Right_Motor.setSpeed(min(255, max(0, SPEED + offset2)));
+      }
+}
+
 
 void DriveForward()
 {
@@ -199,8 +230,11 @@ void printDebug()
   //Serial.print("rightIRValue = ");
   //Serial.println(analogRead(rightIRPin));
 
-  Serial.print("longRangeValue = ");
-  Serial.println(analogRead(longRangePin));
+  Serial.print("sideRangeValue = ");
+  Serial.println(analogRead(sideRangePin));
+
+  Serial.print("frontRangeValue = ");
+  Serial.println(analogRead(frontRangePin));
 
   delay(500);
 }
