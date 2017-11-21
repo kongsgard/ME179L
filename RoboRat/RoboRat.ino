@@ -87,10 +87,11 @@ void setup()
     //changeLaneSetting();
     lane = 2; // TODO: remove
   }
-  armServo.write(140); // Move to 0 degrees
+  armServo.write(30); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
 
   DriveForward();
+  delay(500);
   time = millis();
 }
 
@@ -102,7 +103,6 @@ void loop()
       followWall();
       break;
     case 2:
-      delay(100);
       followMiddleLane();
       frontSensorValue = analogRead(frontRangePin);
       if (frontSensorValue > wallThreshold)
