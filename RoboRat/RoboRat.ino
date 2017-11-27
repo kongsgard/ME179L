@@ -41,7 +41,8 @@ unsigned int frontSensorValue = 0;
 unsigned int lane = 0;
 unsigned int wallThreshold = 300;
 
-unsigned long time;
+unsigned long killTime;
+unsigned long armTime;
 
 // P-controller
 float gain1;
@@ -87,12 +88,13 @@ void setup()
     //changeLaneSetting();
     lane = 2; // TODO: remove
   }
-  armServo.write(30); // Move to 0 degrees
   towerServo.write(105); // Move to 120 degrees
+  armServo.write(60); // Move to 0 degrees
 
   DriveForward();
   delay(500);
-  time = millis();
+  killTime = millis();
+  armTime = millis();
 }
 
 void loop()
@@ -116,6 +118,7 @@ void loop()
       break;
   }
 
+  // lowerArm();
   killSwitch();
 
   #ifdef DEBUG
@@ -238,11 +241,20 @@ void SharpTurnRight()
 void killSwitch()
 {
   // Stop robot if killSwitch is pressed
-  if (millis() - time > 1000 && !digitalRead(killSwitchPin))
+  if (millis() - killTime > 1000 && !digitalRead(killSwitchPin))
   {
-      StopMotors();
-      while(true) {}
-    }
+    StopMotors();
+    while(true) {}
+  }
+}
+
+void lowerArm()
+{
+  // Stop robot if killSwitch is pressed
+  if (millis() - armTime > 9000)
+  {
+    armServo.write(40); // Move to 0 degrees
+  }
 }
 
 void printDebug()
