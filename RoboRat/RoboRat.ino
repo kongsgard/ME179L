@@ -235,7 +235,7 @@ void SharpTurnRight()
   DriveBack();
   delay(100);
   TurnRight();
-  delay(750);
+  delay(900);
 }
 
 void killSwitch()
