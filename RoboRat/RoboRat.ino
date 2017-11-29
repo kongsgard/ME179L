@@ -17,6 +17,7 @@
 #define leftIRPin      A0
 #define rightIRPin     A1
 #define lightSensorPin A2
+#define rightRangePin  A3
 //#define settingsPin    18 // A4
 #define frontRangePin  A4
 #define leftRangePin   A5
@@ -35,7 +36,8 @@ const unsigned int lightSensorThreshold = 200;
 
 unsigned int leftIRValue      = 0;
 unsigned int rightIRValue     = 0;
-unsigned int rightSensorValue  = 0;
+unsigned int leftSensorValue  = 0;
+unsigned int rightSensorValue = 0;
 unsigned int frontSensorValue = 0;
 
 unsigned int lane = 0;
@@ -162,11 +164,11 @@ void followMiddleLane()
 
 void followWall()
 {
-  rightSensorValue = analogRead(leftRangePin);
+  leftSensorValue = analogRead(leftRangePin);
   frontSensorValue = analogRead(frontRangePin);
 
   gain1 = -1.5;
-  error1 = 125 - rightSensorValue;
+  error1 = 125 - leftSensorValue;
   offset1 = gain1 * error1;
 
   leftMotorSpeed = min(255, max(0, SPEED + offset1));
@@ -267,11 +269,14 @@ void printDebug()
   //Serial.print("rightIRValue = ");
   //Serial.println(analogRead(rightIRPin));
 
-  Serial.print("sideRangeValue = ");
+  Serial.print("leftRangeValue = ");
   Serial.println(analogRead(leftRangePin));
 
-  Serial.print("frontRangeValue = ");
-  Serial.println(analogRead(frontRangePin));
+  Serial.print("rightRangeValue = ");
+  Serial.println(analogRead(rightRangePin));
+
+  //Serial.print("frontRangeValue = ");
+  //Serial.println(analogRead(frontRangePin));
 
   delay(500);
 }
