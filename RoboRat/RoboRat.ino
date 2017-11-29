@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG 1
+//#define DEBUG 1
 
 // Pin defines:
 #define settingsPin    0
@@ -137,26 +137,26 @@ void followMiddleLane()
   if(leftIRValue < black && rightIRValue < black)
   {
     //BOTH WHITE
-    Right_Motor.setSpeed(SPEED-20);
-    Left_Motor.setSpeed(SPEED-20);
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
   }
   else if(leftIRValue < black && rightIRValue > black)
   {
     //TURN RIGHT
-    Right_Motor.setSpeed(SPEED-20);
+    Right_Motor.setSpeed(SPEED);
     Left_Motor.setSpeed(0);
   }
   else if(leftIRValue > black && rightIRValue < black)
   {
     //TURN LEFT
     Right_Motor.setSpeed(0);
-    Left_Motor.setSpeed(SPEED-20);
+    Left_Motor.setSpeed(SPEED);
   }
   else
   {
     //BOTH BLACK
-    Right_Motor.setSpeed(SPEED-20);
-    Left_Motor.setSpeed(SPEED-20);
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
     DriveForward();
   }
 }
@@ -191,12 +191,12 @@ void followWallCCW()
   rightSensorValue = analogRead(leftRangePin);
   frontSensorValue = analogRead(frontRangePin);
 
-  gain1 = -5;
+  gain1 = -1.5;
   error1 = 25 - leftSensorValue;
   offset1 = gain1 * error1;
 
-  leftMotorSpeed = min(255, max(0, SPEED + offset1));
-  rightMotorSpeed = min(255, max(0, SPEED - offset1));
+  leftMotorSpeed = min(255, max(0, SPEED - 2*offset1));
+  rightMotorSpeed = min(255, max(0, SPEED + offset1));
 
   Left_Motor.setSpeed(leftMotorSpeed);
   Right_Motor.setSpeed(rightMotorSpeed);
@@ -292,19 +292,25 @@ void lowerArm()
 
 void printDebug()
 {
-  Serial.print("lightSensor = ");
-  Serial.println(analogRead(lightSensorPin));
+  //Serial.print("lightSensor = ");
+  //Serial.println(analogRead(lightSensorPin));
 
   //Serial.print("leftIRValue = ");
   //Serial.println(analogRead(leftIRPin));
   //Serial.print("rightIRValue = ");
   //Serial.println(analogRead(rightIRPin));
 
-  Serial.print("leftRangeValue = ");
-  Serial.println(analogRead(leftRangePin));
+  //Serial.print("leftRangeValue = ");
+  //Serial.println(analogRead(leftRangePin));
 
-  Serial.print("rightRangeValue = ");
-  Serial.println(analogRead(rightRangePin));
+  //Serial.print("rightRangeValue = ");
+  //Serial.println(analogRead(rightRangePin));
+
+  Serial.print("rightMotorSpeed = ");
+  Serial.println(rightMotorSpeed);
+
+  Serial.print("leftMotorSpeed = ");
+  Serial.println(leftMotorSpeed);
 
   //Serial.print("frontRangeValue = ");
   //Serial.println(analogRead(frontRangePin));
