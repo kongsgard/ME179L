@@ -17,9 +17,9 @@
 #define leftIRPin      A0
 #define rightIRPin     A1
 #define lightSensorPin A2
-#define settingsPin    18 // A4
+//#define settingsPin    18 // A4
 #define frontRangePin  A4
-#define sideRangePin   A5
+#define leftRangePin   A5
 
 unsigned int SPEED = 255;
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -35,7 +35,7 @@ const unsigned int lightSensorThreshold = 200;
 
 unsigned int leftIRValue      = 0;
 unsigned int rightIRValue     = 0;
-unsigned int sideSensorValue  = 0;
+unsigned int rightSensorValue  = 0;
 unsigned int frontSensorValue = 0;
 
 unsigned int lane = 0;
@@ -162,11 +162,11 @@ void followMiddleLane()
 
 void followWall()
 {
-  sideSensorValue = analogRead(sideRangePin);
+  rightSensorValue = analogRead(leftRangePin);
   frontSensorValue = analogRead(frontRangePin);
 
   gain1 = -1.5;
-  error1 = 125 - sideSensorValue;
+  error1 = 125 - rightSensorValue;
   offset1 = gain1 * error1;
 
   leftMotorSpeed = min(255, max(0, SPEED + offset1));
@@ -268,7 +268,7 @@ void printDebug()
   //Serial.println(analogRead(rightIRPin));
 
   Serial.print("sideRangeValue = ");
-  Serial.println(analogRead(sideRangePin));
+  Serial.println(analogRead(leftRangePin));
 
   Serial.print("frontRangeValue = ");
   Serial.println(analogRead(frontRangePin));
