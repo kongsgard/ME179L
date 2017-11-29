@@ -87,8 +87,7 @@ void setup()
   pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {
-
-    lane = 2; // TODO: remove
+    changeLaneSetting();
   }
   towerServo.write(105); // Move to 120 degrees
   armServo.write(60); // Move to 0 degrees
@@ -116,7 +115,8 @@ void loop()
       }
       break;
     case 3:
-      followWall();
+      StopMotors();
+      //followLeftWall();
       break;
   }
 
@@ -221,7 +221,7 @@ void StopMotors()
 
 void changeLaneSetting()
 {
-    if (digitalRead(switchPin))
+    if (!digitalRead(settingsPin))
     {
       lane = 3;
     }
@@ -245,7 +245,7 @@ void killSwitch()
     StopMotors();
     while(true) {}
   }
-}ar
+}
 
 void lowerArm()
 {
