@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-//#define DEBUG 1
+#define DEBUG 1
 
 // Pin defines:
 #define settingsPin    0
@@ -90,7 +90,7 @@ void setup()
     changeLaneSetting();
   }
   towerServo.write(105); // Move to 120 degrees
-  armServo.write(60); // Move to 0 degrees
+  armServo.write(70); // Move to 0 degrees
 
   DriveForward();
   delay(500);
@@ -103,7 +103,7 @@ void loop()
   switch(lane) // Choose which lane to go for first (the GOLDEN lane!)
   {
     case 1:
-      followWall();
+      followWallCW();
       break;
     case 2:
       followMiddleLane();
@@ -115,8 +115,7 @@ void loop()
       }
       break;
     case 3:
-      StopMotors();
-      //followLeftWall();
+      followWallCCW();
       break;
   }
 
@@ -138,31 +137,31 @@ void followMiddleLane()
   if(leftIRValue < black && rightIRValue < black)
   {
     //BOTH WHITE
-    Right_Motor.setSpeed(SPEED);
-    Left_Motor.setSpeed(SPEED);
+    Right_Motor.setSpeed(SPEED-20);
+    Left_Motor.setSpeed(SPEED-20);
   }
   else if(leftIRValue < black && rightIRValue > black)
   {
     //TURN RIGHT
-    Right_Motor.setSpeed(SPEED);
+    Right_Motor.setSpeed(SPEED-20);
     Left_Motor.setSpeed(0);
   }
   else if(leftIRValue > black && rightIRValue < black)
   {
     //TURN LEFT
     Right_Motor.setSpeed(0);
-    Left_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED-20);
   }
   else
   {
     //BOTH BLACK
-    Right_Motor.setSpeed(SPEED);
-    Left_Motor.setSpeed(SPEED);
+    Right_Motor.setSpeed(SPEED-20);
+    Left_Motor.setSpeed(SPEED-20);
     DriveForward();
   }
 }
 
-void followWall()
+void followWallCW()
 {
   leftSensorValue = analogRead(leftRangePin);
   frontSensorValue = analogRead(frontRangePin);
@@ -180,6 +179,31 @@ void followWall()
   if (frontSensorValue > wallThreshold)
   {
     SharpTurnRight();
+  }
+  else
+  {
+    DriveForward();
+  }
+}
+
+void followWallCCW()
+{
+  rightSensorValue = analogRead(leftRangePin);
+  frontSensorValue = analogRead(frontRangePin);
+
+  gain1 = -5;
+  error1 = 25 - leftSensorValue;
+  offset1 = gain1 * error1;
+
+  leftMotorSpeed = min(255, max(0, SPEED + offset1));
+  rightMotorSpeed = min(255, max(0, SPEED - offset1));
+
+  Left_Motor.setSpeed(leftMotorSpeed);
+  Right_Motor.setSpeed(rightMotorSpeed);
+
+  if (frontSensorValue > wallThreshold)
+  {
+    SharpTurnLeft();
   }
   else
   {
@@ -234,7 +258,17 @@ void SharpTurnRight()
   DriveBack();
   delay(100);
   TurnRight();
-  delay(900);
+  delay(800);
+}
+
+void SharpTurnLeft()
+{
+  Left_Motor.setSpeed(255);
+  Right_Motor.setSpeed(255);
+  DriveBack();
+  delay(100);
+  TurnLeft();
+  delay(800);
 }
 
 void killSwitch()
