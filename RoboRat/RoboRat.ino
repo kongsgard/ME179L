@@ -7,18 +7,18 @@
 //#define DEBUG 1
 
 // Pin defines:
+#define settingsPin    0
 #define killSwitchPin  2
 #define leftMotorPin   3
 #define RightMotorPin  4
 #define armServoPin    9
 #define towerServoPin  10
-#define txPin          13  // LCD tx pin.
+#define txPin          13  // LCD tx pin.0
 #define rxPin          13  // LCD rx pin (not really used)
 #define leftIRPin      A0
 #define rightIRPin     A1
-#define lightSensorPin A2
-#define rightRangePin  A3
-//#define settingsPin    18 // A4
+#define rightRangePin  A2
+#define lightSensorPin A3
 #define frontRangePin  A4
 #define leftRangePin   A5
 
@@ -40,7 +40,7 @@ unsigned int leftSensorValue  = 0;
 unsigned int rightSensorValue = 0;
 unsigned int frontSensorValue = 0;
 
-unsigned int lane = 0;
+unsigned int lane = 2;
 unsigned int wallThreshold = 300;
 
 unsigned long killTime;
@@ -87,7 +87,7 @@ void setup()
   pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {
-    //changeLaneSetting();
+
     lane = 2; // TODO: remove
   }
   towerServo.write(105); // Move to 120 degrees
@@ -221,13 +221,10 @@ void StopMotors()
 
 void changeLaneSetting()
 {
-    lane = analogRead(settingsPin) / 300 + 1;
-    if(lane = 4)
+    if (digitalRead(switchPin))
     {
       lane = 3;
     }
-    //Serial.print("lane = ");
-    //Serial.println(lane);
 }
 
 void SharpTurnRight()
@@ -248,7 +245,7 @@ void killSwitch()
     StopMotors();
     while(true) {}
   }
-}
+}ar
 
 void lowerArm()
 {
@@ -261,8 +258,8 @@ void lowerArm()
 
 void printDebug()
 {
-  //Serial.print("lightSensor = ");
-  //Serial.println(analogRead(lightSensorPin));
+  Serial.print("lightSensor = ");
+  Serial.println(analogRead(lightSensorPin));
 
   //Serial.print("leftIRValue = ");
   //Serial.println(analogRead(leftIRPin));
