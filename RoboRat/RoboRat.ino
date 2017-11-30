@@ -192,7 +192,7 @@ void followWallCCW()
   frontSensorValue = analogRead(frontRangePin);
 
   gain1 = -2.5;
-  error1 = 25 - rightSensorValue;
+  error1 = 30 - rightSensorValue;
   offset1 = gain1 * error1;
 
   leftMotorSpeed = min(255, max(0, SPEED - offset1));
