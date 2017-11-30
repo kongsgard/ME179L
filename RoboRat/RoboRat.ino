@@ -201,19 +201,6 @@ void followWallCCW()
   Left_Motor.setSpeed(leftMotorSpeed);
   Right_Motor.setSpeed(rightMotorSpeed);
 
-  Serial.println(error1);
-  Serial.println(offset1);
-
-  Serial.print("rightRangeValue = ");
-  Serial.println(analogRead(rightRangePin));
-
-  Serial.print("rightMotorSpeed = ");
-  Serial.println(rightMotorSpeed);
-
-  Serial.print("leftMotorSpeed = ");
-  Serial.println(leftMotorSpeed);
-
-
   if (frontSensorValue > wallThreshold)
   {
     SharpTurnLeft();
