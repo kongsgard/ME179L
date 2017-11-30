@@ -15,8 +15,8 @@
 #define towerServoPin  10
 #define txPin          13  // LCD tx pin.0
 #define rxPin          13  // LCD rx pin (not really used)
-#define leftIRPin      A0
-#define rightIRPin     A1
+#define rightIRPin     A0
+#define leftIRPin      A1
 #define rightRangePin  A2
 #define lightSensorPin A3
 #define frontRangePin  A4
@@ -292,8 +292,8 @@ void lowerArm()
 
 void printDebug()
 {
-  //Serial.print("lightSensor = ");
-  //Serial.println(analogRead(lightSensorPin));
+  Serial.print("lightSensor = ");
+  Serial.println(analogRead(lightSensorPin));
 
   //Serial.print("leftIRValue = ");
   //Serial.println(analogRead(leftIRPin));
