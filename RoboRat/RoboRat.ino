@@ -22,7 +22,7 @@
 #define frontRangePin  A4
 #define leftRangePin   A5
 
-unsigned int SPEED = 255;
+int SPEED = 255;
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
 AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on port 3, 1KHz pwm
 
@@ -188,18 +188,31 @@ void followWallCW()
 
 void followWallCCW()
 {
-  rightSensorValue = analogRead(leftRangePin);
+  rightSensorValue = analogRead(rightRangePin);
   frontSensorValue = analogRead(frontRangePin);
 
-  gain1 = -1.5;
-  error1 = 25 - leftSensorValue;
+  gain1 = -2.5;
+  error1 = 25 - rightSensorValue;
   offset1 = gain1 * error1;
 
-  leftMotorSpeed = min(255, max(0, SPEED - 2*offset1));
+  leftMotorSpeed = min(255, max(0, SPEED - offset1));
   rightMotorSpeed = min(255, max(0, SPEED + offset1));
 
   Left_Motor.setSpeed(leftMotorSpeed);
   Right_Motor.setSpeed(rightMotorSpeed);
+
+  Serial.println(error1);
+  Serial.println(offset1);
+
+  Serial.print("rightRangeValue = ");
+  Serial.println(analogRead(rightRangePin));
+
+  Serial.print("rightMotorSpeed = ");
+  Serial.println(rightMotorSpeed);
+
+  Serial.print("leftMotorSpeed = ");
+  Serial.println(leftMotorSpeed);
+
 
   if (frontSensorValue > wallThreshold)
   {
@@ -258,7 +271,7 @@ void SharpTurnRight()
   DriveBack();
   delay(100);
   TurnRight();
-  delay(800);
+  delay(700);
 }
 
 void SharpTurnLeft()
@@ -268,7 +281,7 @@ void SharpTurnLeft()
   DriveBack();
   delay(100);
   TurnLeft();
-  delay(800);
+  delay(700);
 }
 
 void killSwitch()
@@ -306,11 +319,13 @@ void printDebug()
   //Serial.print("rightRangeValue = ");
   //Serial.println(analogRead(rightRangePin));
 
-  Serial.print("rightMotorSpeed = ");
-  Serial.println(rightMotorSpeed);
+  //Serial.print("rightMotorSpeed = ");
+  //Serial.println(rightMotorSpeed);
 
-  Serial.print("leftMotorSpeed = ");
-  Serial.println(leftMotorSpeed);
+  //Serial.print("leftMotorSpeed = ");
+  //Serial.println(leftMotorSpeed);
+
+  //Serial.println(offset1);
 
   //Serial.print("frontRangeValue = ");
   //Serial.println(analogRead(frontRangePin));
