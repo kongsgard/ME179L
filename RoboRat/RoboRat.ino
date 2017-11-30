@@ -4,7 +4,7 @@
 #include <AFMotor.h>
 #include <SoftwareSerial.h>
 
-#define DEBUG 1
+// #define DEBUG 1
 
 // Pin defines:
 #define killSwitchPin  2
@@ -18,6 +18,7 @@
 #define rightIRPin     A1
 #define lightSensorPin A2
 #define longRangePin   A3
+#define black 300
 
 #define SPEED 255
 AF_DCMotor Left_Motor(leftMotorPin, MOTOR34_1KHZ); // create left motor on port 4, 1KHz pwm
@@ -36,15 +37,15 @@ unsigned int longRangeValue = 0;
 SoftwareSerial mySerial = SoftwareSerial(rxPin, txPin);
 
 void setup() {
-  #ifdef DEBUG
+//  //#ifdef DEBUG
   // Initialize serial communications at 9600 bps:
   Serial.begin(9600);
 
   // LCD display:
   pinMode(txPin, OUTPUT);
-  mySerial.begin(9600);
-  mySerial.print("?f"); // Send clear screen command to LCD
-  #endif
+  Serial.begin(9600);
+  //Serial.print("?f"); // Send clear screen command to LCD
+//  //#endif
 
   // Motors:
   Right_Motor.setSpeed(SPEED);
@@ -70,14 +71,46 @@ void setup() {
   pinMode(rightIRPin, INPUT_PULLUP);
 
   while(digitalRead(killSwitchPin) && analogRead(lightSensorPin) > lightSensorThreshold) {}
+  armServo.write(140); // Move to 0 degrees
+  towerServo.write(105); // Move to 120 degrees
+  
+  DriveForward();
 }
 
 void loop() {
-  armServo.write(140); // Move to 0 degrees
-  towerServo.write(105); // Move to 120 degrees
+  
 
-  DriveForward();
-  delay(1000);
+  leftIRValue = analogRead(leftIRPin);
+  rightIRValue = analogRead(rightIRPin);
+
+//  DataDisplay();
+  printDebugHost();
+
+  //BOTH WHITE
+  if (leftIRValue < black && rightIRValue < black) {
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
+  }
+
+  //TURN RIGHT
+  else if (leftIRValue < black && rightIRValue > black) {
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(0);
+  }
+
+  //TURN LEFT
+  else if (leftIRValue > black && rightIRValue < black) {
+    Right_Motor.setSpeed(0);
+    Left_Motor.setSpeed(SPEED);
+  }
+
+  //BOTH BLACK
+  else {
+    Right_Motor.setSpeed(SPEED);
+    Left_Motor.setSpeed(SPEED);
+    DriveForward();
+  }
+
 
 //  TurnLeft();
 //  delay(200);
@@ -152,4 +185,12 @@ void printDebugLCD()
   mySerial.print(leftIRPin);
   mySerial.print(" R: ");
   mySerial.print(rightIRPin);
+}
+
+void DataDisplay(){
+  mySerial.print("?f");          //Clears LCD screen
+  mySerial.print("?x00?y0");     //Sets Cursor to x00,y0
+  mySerial.print(leftIRValue);  
+  mySerial.print("?x08?y0");     //Sets Cursor to x00,y0
+  mySerial.print(rightIRValue); 
 }
