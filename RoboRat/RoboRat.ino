@@ -18,7 +18,7 @@
 #define leftIRPin      A0
 #define rightIRPin     A1
 #define rightRangePin  A2
-#define lightSensorPin A3
+#define lightSensorPin A2
 #define frontRangePin  A4
 #define leftRangePin   A5
 
