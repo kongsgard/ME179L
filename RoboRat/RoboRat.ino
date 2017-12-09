@@ -28,7 +28,6 @@ AF_DCMotor Right_Motor(RightMotorPin, MOTOR34_1KHZ); // create right motor on po
 
 #define black 300
 
-// TODO: define servo angle constants on "attack" mode
 Servo armServo;  // create servo object to control a servo
 Servo towerServo;  // create servo object to control a servo
 
@@ -292,8 +291,8 @@ void lowerArm()
 
 void printDebug()
 {
-  Serial.print("lightSensor = ");
-  Serial.println(analogRead(lightSensorPin));
+  //Serial.print("lightSensor = ");
+  //Serial.println(analogRead(lightSensorPin));
 
   //Serial.print("leftIRValue = ");
   //Serial.println(analogRead(leftIRPin));
